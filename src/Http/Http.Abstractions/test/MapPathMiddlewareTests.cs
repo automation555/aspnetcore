@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Threading.Tasks;
@@ -11,6 +11,8 @@ namespace Microsoft.AspNetCore.Builder.Extensions
 {
     public class MapPathMiddlewareTests
     {
+        private static readonly Action<IApplicationBuilder> ActionNotImplemented = new Action<IApplicationBuilder>(_ => { throw new NotImplementedException(); });
+
         private static Task Success(HttpContext context)
         {
             context.Response.StatusCode = 200;
@@ -89,7 +91,7 @@ namespace Microsoft.AspNetCore.Builder.Extensions
             await app.Invoke(context);
 
             Assert.Equal(200, context.Response.StatusCode);
-            Assert.Equal(string.Concat(basePath, requestPath.AsSpan(0, matchPath.Length)), (string)context.Items["test.PathBase"]!);
+            Assert.Equal(basePath + requestPath.Substring(0, matchPath.Length), (string)context.Items["test.PathBase"]!);
             Assert.Equal(requestPath.Substring(matchPath.Length), context.Items["test.Path"]);
         }
 

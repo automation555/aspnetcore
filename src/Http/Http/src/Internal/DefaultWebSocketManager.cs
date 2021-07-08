@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Collections.Generic;
@@ -17,7 +17,6 @@ namespace Microsoft.AspNetCore.Http
         private readonly static Func<IFeatureCollection, IHttpWebSocketFeature?> _nullWebSocketFeature = f => null;
 
         private FeatureReferences<FeatureInterfaces> _features;
-        private readonly static WebSocketAcceptContext _defaultWebSocketAcceptContext = new WebSocketAcceptContext();
 
         public DefaultWebSocketManager(IFeatureCollection features)
         {
@@ -63,18 +62,11 @@ namespace Microsoft.AspNetCore.Http
 
         public override Task<WebSocket> AcceptWebSocketAsync(string? subProtocol)
         {
-            var acceptContext = subProtocol is null ? _defaultWebSocketAcceptContext :
-                new WebSocketAcceptContext() { SubProtocol = subProtocol };
-            return AcceptWebSocketAsync(acceptContext);
-        }
-
-        public override Task<WebSocket> AcceptWebSocketAsync(WebSocketAcceptContext acceptContext)
-        {
             if (WebSocketFeature == null)
             {
                 throw new NotSupportedException("WebSockets are not supported");
             }
-            return WebSocketFeature.AcceptAsync(acceptContext);
+            return WebSocketFeature.AcceptAsync(new WebSocketAcceptContext() { SubProtocol = subProtocol });
         }
 
         struct FeatureInterfaces

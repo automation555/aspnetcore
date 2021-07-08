@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Collections.Generic;
@@ -11,7 +11,7 @@ namespace Microsoft.Net.Http.Headers
 {
     internal static class CookieHeaderParserShared
     {
-        public static bool TryParseValues(StringValues values, IDictionary<string, string> store, bool enableCookieNameEncoding, bool supportsMultipleValues)
+        public static bool TryParseValues(StringValues values, Dictionary<string, string> store, bool enableCookieNameEncoding, bool supportsMultipleValues)
         {
             // If a parser returns an empty list, it means there was no value, but that's valid (e.g. "Accept: "). The caller
             // can ignore the value.

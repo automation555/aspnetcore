@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Diagnostics;
@@ -65,22 +65,25 @@ namespace Microsoft.AspNetCore.Cryptography.SafeHandles
         /// </summary>
         public string GetAlgorithmName()
         {
-            const int StackAllocCharSize = 128;
-
             // First, calculate how many characters are in the name.
             uint byteLengthOfNameWithTerminatingNull = GetProperty(Constants.BCRYPT_ALGORITHM_NAME, null, 0);
-            CryptoUtil.Assert(byteLengthOfNameWithTerminatingNull % sizeof(char) == 0 && byteLengthOfNameWithTerminatingNull > sizeof(char) && byteLengthOfNameWithTerminatingNull <= StackAllocCharSize * sizeof(char), "byteLengthOfNameWithTerminatingNull % sizeof(char) == 0 && byteLengthOfNameWithTerminatingNull > sizeof(char) && byteLengthOfNameWithTerminatingNull <= StackAllocCharSize * sizeof(char)");
+            CryptoUtil.Assert(byteLengthOfNameWithTerminatingNull % sizeof(char) == 0 && byteLengthOfNameWithTerminatingNull > sizeof(char), "byteLengthOfNameWithTerminatingNull % sizeof(char) == 0 && byteLengthOfNameWithTerminatingNull > sizeof(char)");
             uint numCharsWithoutNull = (byteLengthOfNameWithTerminatingNull - 1) / sizeof(char);
 
             if (numCharsWithoutNull == 0)
             {
-                return string.Empty; // degenerate case
+                return String.Empty; // degenerate case
             }
 
-            char* pBuffer = stackalloc char[StackAllocCharSize];
-            uint numBytesCopied = GetProperty(Constants.BCRYPT_ALGORITHM_NAME, pBuffer, byteLengthOfNameWithTerminatingNull);
+            // Allocate a string object and write directly into it (CLR team approves of this mechanism).
+            string retVal = new String((char)0, checked((int)numCharsWithoutNull));
+            uint numBytesCopied;
+            fixed (char* pRetVal = retVal)
+            {
+                numBytesCopied = GetProperty(Constants.BCRYPT_ALGORITHM_NAME, pRetVal, byteLengthOfNameWithTerminatingNull);
+            }
             CryptoUtil.Assert(numBytesCopied == byteLengthOfNameWithTerminatingNull, "numBytesCopied == byteLengthOfNameWithTerminatingNull");
-            return new string(pBuffer, 0, (int)numCharsWithoutNull);
+            return retVal;
         }
 
         /// <summary>

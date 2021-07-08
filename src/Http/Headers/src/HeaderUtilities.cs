@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Collections.Generic;
@@ -12,11 +12,11 @@ using Microsoft.Extensions.Primitives;
 namespace Microsoft.Net.Http.Headers
 {
     /// <summary>
-    /// Provides utilities to parse and modify HTTP header values.
+    /// Provides utilities to parse and modify HTTP header valeus.
     /// </summary>
     public static class HeaderUtilities
     {
-        private const int _qualityValueMaxCharCount = 10; // Little bit more permissive than RFC7231 5.3.1
+        private static readonly int _qualityValueMaxCharCount = 10; // Little bit more permissive than RFC7231 5.3.1
         private const string QualityName = "q";
         internal const string BytesUnit = "bytes";
 

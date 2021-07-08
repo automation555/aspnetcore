@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Collections.Generic;
@@ -61,7 +61,7 @@ namespace Microsoft.AspNetCore.HostFiltering
                         app.Use((ctx, next) =>
                         {
                             ctx.Request.Headers.Remove(HeaderNames.Host);
-                            return next(ctx);
+                            return next();
                         });
                         app.UseHostFiltering();
                         app.Run(c =>
@@ -101,8 +101,8 @@ namespace Microsoft.AspNetCore.HostFiltering
                     {
                         app.Use((ctx, next) =>
                         {
-                            ctx.Request.Headers.Host = "";
-                            return next(ctx);
+                            ctx.Request.Headers[HeaderNames.Host] = "";
+                            return next();
                         });
                         app.UseHostFiltering();
                         app.Run(c =>
@@ -158,8 +158,8 @@ namespace Microsoft.AspNetCore.HostFiltering
                         {
                             // TestHost's ClientHandler doesn't let you set the host header, only the host in the URI
                             // and that would over-normalize some of our test conditions like casing.
-                            ctx.Request.Headers.Host = hosturl;
-                            return next(ctx);
+                            ctx.Request.Headers[HeaderNames.Host] = hosturl;
+                            return next();
                         });
                         app.UseHostFiltering();
                         app.Run(c => Task.CompletedTask);
@@ -210,8 +210,8 @@ namespace Microsoft.AspNetCore.HostFiltering
                         {
                             // TestHost's ClientHandler doesn't let you set the host header, only the host in the URI
                             // and that would reject some of our test conditions.
-                            ctx.Request.Headers.Host = hosturl;
-                            return next(ctx);
+                            ctx.Request.Headers[HeaderNames.Host] = hosturl;
+                            return next();
                         });
                         app.UseHostFiltering();
                         app.Run(c => throw new NotImplementedException("App"));
@@ -249,8 +249,8 @@ namespace Microsoft.AspNetCore.HostFiltering
                     {
                         app.Use((ctx, next) =>
                         {
-                            ctx.Request.Headers.Host = currentHost;
-                            return next(ctx);
+                            ctx.Request.Headers[HeaderNames.Host] = currentHost;
+                            return next();
                         });
                         app.UseHostFiltering();
                         app.Run(c => Task.CompletedTask);

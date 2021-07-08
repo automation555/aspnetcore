@@ -1,10 +1,9 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Testing;
 using Xunit;
 
 namespace Microsoft.AspNetCore.ConcurrencyLimiter.Tests.PolicyTests
@@ -111,12 +110,12 @@ namespace Microsoft.AspNetCore.ConcurrencyLimiter.Tests.PolicyTests
 
             var task = AwaitAndBlock();
 
-            await Task.Run(() => tcs.Complete(true)).DefaultTimeout();
+            await Task.Run(() => tcs.Complete(true)).OrTimeout();
 
             Assert.False(task.IsCompleted);
 
             mre.Set();
-            await task.DefaultTimeout();
+            await task.OrTimeout();
         }
     }
 }

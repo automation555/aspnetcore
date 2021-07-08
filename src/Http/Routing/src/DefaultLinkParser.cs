@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Collections.Concurrent;
@@ -184,8 +184,7 @@ namespace Microsoft.AspNetCore.Routing
             private static readonly Action<ILogger, IEnumerable<string>, object, Exception> _endpointsFound = LoggerMessage.Define<IEnumerable<string>, object>(
                 LogLevel.Debug,
                 EventIds.EndpointsFound,
-                "Found the endpoints {Endpoints} for address {Address}",
-                skipEnabledCheck: true);
+                "Found the endpoints {Endpoints} for address {Address}");
 
             private static readonly Action<ILogger, object, Exception> _endpointsNotFound = LoggerMessage.Define<object>(
                 LogLevel.Debug,
@@ -195,14 +194,12 @@ namespace Microsoft.AspNetCore.Routing
             private static readonly Action<ILogger, string, string, Exception> _pathParsingSucceeded = LoggerMessage.Define<string, string>(
                 LogLevel.Debug,
                 EventIds.PathParsingSucceeded,
-                "Path parsing succeeded for endpoint {Endpoint} and URI path {URI}",
-                skipEnabledCheck: true);
+                "Path parsing succeeded for endpoint {Endpoint} and URI path {URI}");
 
             private static readonly Action<ILogger, IEnumerable<string>, string, Exception> _pathParsingFailed = LoggerMessage.Define<IEnumerable<string>, string>(
                 LogLevel.Debug,
                 EventIds.PathParsingFailed,
-                "Path parsing failed for endpoints {Endpoints} and URI path {URI}",
-                skipEnabledCheck: true);
+                "Path parsing failed for endpoints {Endpoints} and URI path {URI}");
 
             public static void EndpointsFound(ILogger logger, object address, IEnumerable<Endpoint> endpoints)
             {

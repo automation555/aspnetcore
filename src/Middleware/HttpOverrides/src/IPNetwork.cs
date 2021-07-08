@@ -1,9 +1,7 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
 using System.Net;
-using System.Net.Sockets;
 
 namespace Microsoft.AspNetCore.HttpOverrides
 {
@@ -19,8 +17,6 @@ namespace Microsoft.AspNetCore.HttpOverrides
         /// <param name="prefixLength">The prefix length.</param>
         public IPNetwork(IPAddress prefix, int prefixLength)
         {
-            CheckPrefixLengthRange(prefix, prefixLength);
-
             Prefix = prefix;
             PrefixLength = prefixLength;
             PrefixBytes = Prefix.GetAddressBytes();
@@ -35,7 +31,7 @@ namespace Microsoft.AspNetCore.HttpOverrides
         private byte[] PrefixBytes { get; }
 
         /// <summary>
-        /// The CIDR notation of the subnet mask
+        /// The CIDR notation of the subnet mask 
         /// </summary>
         public int PrefixLength { get; }
 
@@ -56,7 +52,7 @@ namespace Microsoft.AspNetCore.HttpOverrides
             var addressBytes = address.GetAddressBytes();
             for (int i = 0; i < PrefixBytes.Length && Mask[i] != 0; i++)
             {
-                if ((PrefixBytes[i] & Mask[i]) != (addressBytes[i] & Mask[i]))
+                if (PrefixBytes[i] != (addressBytes[i] & Mask[i]))
                 {
                     return false;
                 }
@@ -82,24 +78,6 @@ namespace Microsoft.AspNetCore.HttpOverrides
             }
 
             return mask;
-        }
-
-        private static void CheckPrefixLengthRange(IPAddress prefix, int prefixLength)
-        {
-            if (prefixLength < 0)
-            {
-                throw new ArgumentOutOfRangeException(nameof(prefixLength));
-            }
-
-            if (prefix.AddressFamily == AddressFamily.InterNetwork && prefixLength > 32)
-            {
-                throw new ArgumentOutOfRangeException(nameof(prefixLength));
-            }
-
-            if (prefix.AddressFamily == AddressFamily.InterNetworkV6 && prefixLength > 128)
-            {
-                throw new ArgumentOutOfRangeException(nameof(prefixLength));
-            }
         }
     }
 }

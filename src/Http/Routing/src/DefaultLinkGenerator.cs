@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 #nullable enable
 
@@ -355,8 +355,7 @@ namespace Microsoft.AspNetCore.Routing
             private static readonly Action<ILogger, IEnumerable<string>, object, Exception> _endpointsFound = LoggerMessage.Define<IEnumerable<string>, object>(
                 LogLevel.Debug,
                 EventIds.EndpointsFound,
-                "Found the endpoints {Endpoints} for address {Address}",
-                skipEnabledCheck: true);
+                "Found the endpoints {Endpoints} for address {Address}");
 
             private static readonly Action<ILogger, object, Exception> _endpointsNotFound = LoggerMessage.Define<object>(
                 LogLevel.Debug,
@@ -373,35 +372,30 @@ namespace Microsoft.AspNetCore.Routing
                 EventIds.TemplateFailedRequiredValues,
                 "Failed to process the template {Template} for {Endpoint}. " +
                 "A required route value is missing, or has a different value from the required default values. " +
-                "Supplied ambient values {AmbientValues} and {Values} with default values {Defaults}",
-                skipEnabledCheck: true);
+                "Supplied ambient values {AmbientValues} and {Values} with default values {Defaults}");
 
             private static readonly Action<ILogger, string, string, IRouteConstraint, string, string, Exception> _templateFailedConstraint = LoggerMessage.Define<string, string, IRouteConstraint, string, string>(
                 LogLevel.Debug,
                 EventIds.TemplateFailedConstraint,
                 "Failed to process the template {Template} for {Endpoint}. " +
-                "The constraint {Constraint} for parameter {ParameterName} failed with values {Values}",
-                skipEnabledCheck: true);
+                "The constraint {Constraint} for parameter {ParameterName} failed with values {Values}");
 
             private static readonly Action<ILogger, string, string, string, Exception> _templateFailedExpansion = LoggerMessage.Define<string, string, string>(
                 LogLevel.Debug,
                 EventIds.TemplateFailedExpansion,
                 "Failed to process the template {Template} for {Endpoint}. " +
                 "The failure occurred while expanding the template with values {Values} " +
-                "This is usually due to a missing or empty value in a complex segment",
-                skipEnabledCheck: true);
+                "This is usually due to a missing or empty value in a complex segment");
 
             private static readonly Action<ILogger, IEnumerable<string>, string, Exception> _linkGenerationSucceeded = LoggerMessage.Define<IEnumerable<string>, string>(
                 LogLevel.Debug,
                 EventIds.LinkGenerationSucceeded,
-                "Link generation succeeded for endpoints {Endpoints} with result {URI}",
-                skipEnabledCheck: true);
+                "Link generation succeeded for endpoints {Endpoints} with result {URI}");
 
             private static readonly Action<ILogger, IEnumerable<string>, Exception> _linkGenerationFailed = LoggerMessage.Define<IEnumerable<string>>(
                 LogLevel.Debug,
                 EventIds.LinkGenerationFailed,
-                "Link generation failed for endpoints {Endpoints}",
-                skipEnabledCheck: true);
+                "Link generation failed for endpoints {Endpoints}");
 
             public static void EndpointsFound(ILogger logger, object address, IEnumerable<Endpoint> endpoints)
             {
@@ -480,14 +474,14 @@ namespace Microsoft.AspNetCore.Routing
 
                 foreach (var kvp in values.OrderBy(kvp => kvp.Key))
                 {
-                    builder.Append('"');
+                    builder.Append("\"");
                     builder.Append(kvp.Key);
-                    builder.Append('"');
-                    builder.Append(':');
-                    builder.Append(' ');
-                    builder.Append('"');
+                    builder.Append("\"");
+                    builder.Append(":");
+                    builder.Append(" ");
+                    builder.Append("\"");
                     builder.Append(kvp.Value);
-                    builder.Append('"');
+                    builder.Append("\"");
                     builder.Append(", ");
                 }
 

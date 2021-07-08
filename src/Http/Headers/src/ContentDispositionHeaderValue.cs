@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Buffers;
@@ -518,7 +518,7 @@ namespace Microsoft.Net.Http.Headers
         }
 
         // Returns true if the value starts and ends with a quote
-        private static bool IsQuoted(StringSegment value)
+        private bool IsQuoted(StringSegment value)
         {
             Contract.Assert(value != null);
 
@@ -527,7 +527,7 @@ namespace Microsoft.Net.Http.Headers
         }
 
         // tspecials are required to be in a quoted string.  Only non-ascii needs to be encoded.
-        private static bool RequiresEncoding(StringSegment input)
+        private bool RequiresEncoding(StringSegment input)
         {
             Contract.Assert(input != null);
 
@@ -541,12 +541,27 @@ namespace Microsoft.Net.Http.Headers
             return false;
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private static int GetBase64Length(int inputLength)
+        {
+            // Copied from https://github.com/dotnet/runtime/blob/82ca681cbac89d813a3ce397e0c665e6c051ed67/src/libraries/System.Private.CoreLib/src/System/Convert.cs#L2530
+            long outlen = ((long)inputLength) / 3 * 4;          // the base length - we want integer division here.
+            outlen += ((inputLength % 3) != 0) ? 4 : 0;         // at most 4 more chars for the remainder
+
+            if (outlen > int.MaxValue)
+            {
+                throw new OutOfMemoryException();
+            }
+
+            return (int)outlen;
+        }
+
         // Encode using MIME encoding
         // And adds surrounding quotes, Encoded data must always be quoted, the equals signs are invalid in tokens
         private string EncodeMimeWithQuotes(StringSegment input)
         {
             var requiredLength = MimePrefix.Length +
-                Base64.GetMaxEncodedToUtf8Length(Encoding.UTF8.GetByteCount(input.AsSpan())) +
+                GetBase64Length(Encoding.UTF8.GetByteCount(input.AsSpan())) +
                 MimeSuffix.Length;
             Span<byte> buffer = requiredLength <= 256
                 ? (stackalloc byte[256]).Slice(0, requiredLength)
@@ -607,7 +622,7 @@ namespace Microsoft.Net.Http.Headers
 
         // Encode a string using RFC 5987 encoding
         // encoding'lang'PercentEncodedSpecials
-        private static string Encode5987(StringSegment input)
+        private string Encode5987(StringSegment input)
         {
             var builder = new StringBuilder("UTF-8\'\'");
             for (int i = 0; i < input.Length; i++)
@@ -649,7 +664,7 @@ namespace Microsoft.Net.Http.Headers
 
         // Attempt to decode using RFC 5987 encoding.
         // encoding'language'my%20string
-        private static bool TryDecode5987(StringSegment input, [NotNullWhen(true)] out string? output)
+        private bool TryDecode5987(StringSegment input, [NotNullWhen(true)] out string? output)
         {
             output = null;
 
@@ -764,7 +779,7 @@ namespace Microsoft.Net.Http.Headers
                 || ((digit >= 'A') && (digit <= 'F'))
                 || ((digit >= 'a') && (digit <= 'f'))))
             {
-                throw new ArgumentOutOfRangeException(nameof(digit));
+                throw new ArgumentException();
             }
 
             var res = (digit <= '9')
@@ -778,7 +793,7 @@ namespace Microsoft.Net.Http.Headers
                 || ((next >= 'A') && (next <= 'F'))
                 || ((next >= 'a') && (next <= 'f'))))
             {
-                throw new ArgumentOutOfRangeException(nameof(next));
+                throw new ArgumentException();
             }
 
             return (byte)((res << 4) + ((next <= '9')

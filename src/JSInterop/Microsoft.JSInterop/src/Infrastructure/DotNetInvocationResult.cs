@@ -1,3 +1,6 @@
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
+
 using System;
 
 namespace Microsoft.JSInterop.Infrastructure
@@ -12,9 +15,9 @@ namespace Microsoft.JSInterop.Infrastructure
         /// </summary>
         /// <param name="exception">The <see cref="System.Exception"/> that caused the failure.</param>
         /// <param name="errorKind">The error kind.</param>
-        internal DotNetInvocationResult(Exception exception, string? errorKind)
+        public DotNetInvocationResult(Exception exception, string? errorKind)
         {
-            ResultJson = default;
+            Result = default;
             Exception = exception ?? throw new ArgumentNullException(nameof(exception));
             ErrorKind = errorKind;
             Success = false;
@@ -23,10 +26,10 @@ namespace Microsoft.JSInterop.Infrastructure
         /// <summary>
         /// Constructor for a successful invocation.
         /// </summary>
-        /// <param name="resultJson">The JSON representation of the result.</param>
-        internal DotNetInvocationResult(string? resultJson)
+        /// <param name="result">The result.</param>
+        public DotNetInvocationResult(object? result)
         {
-            ResultJson = resultJson;
+            Result = result;
             Exception = default;
             ErrorKind = default;
             Success = true;
@@ -43,9 +46,9 @@ namespace Microsoft.JSInterop.Infrastructure
         public string? ErrorKind { get; }
 
         /// <summary>
-        /// Gets a JSON representation of the result of a successful invocation.
+        /// Gets the result of a successful invocation.
         /// </summary>
-        public string? ResultJson { get; }
+        public object? Result { get; }
 
         /// <summary>
         /// <see langword="true"/> if the invocation succeeded, otherwise <see langword="false"/>.

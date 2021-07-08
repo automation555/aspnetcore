@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -111,7 +111,7 @@ namespace Microsoft.AspNetCore.Routing
             {
                 if (_path.Length != 0)
                 {
-                    _path.Append('/');
+                    _path.Append("/");
                 }
             }
 
@@ -124,7 +124,7 @@ namespace Microsoft.AspNetCore.Routing
             // This prevents the leading slash from PathString segments from being encoded.
             if (_path.Length == 0 && value.Length > 0 && value[0] == '/')
             {
-                _path.Append('/');
+                _path.Append("/");
                 EncodeValue(value, 1, value.Length - 1, encodeSlashes);
             }
             else
@@ -305,7 +305,7 @@ namespace Microsoft.AspNetCore.Routing
                 while ((end = value.IndexOf('/', start, characterCount)) >= 0)
                 {
                     _urlEncoder.Encode(PathWriter, value, start, end - start);
-                    _path.Append('/');
+                    _path.Append("/");
 
                     start = end + 1;
                     characterCount = length - start;

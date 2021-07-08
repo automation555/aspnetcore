@@ -1,7 +1,8 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
+using System.Reflection;
 using Microsoft.AspNetCore.DataProtection.Internal;
 
 namespace Microsoft.AspNetCore.DataProtection
@@ -12,8 +13,6 @@ namespace Microsoft.AspNetCore.DataProtection
     /// </summary>
     internal class SimpleActivator : IActivator
     {
-        private static readonly Type[] _serviceProviderTypeArray = { typeof(IServiceProvider) };
-
         /// <summary>
         /// A default <see cref="SimpleActivator"/> whose wrapped <see cref="IServiceProvider"/> is null.
         /// </summary>
@@ -43,7 +42,7 @@ namespace Microsoft.AspNetCore.DataProtection
             }
 
             // If an IServiceProvider was specified or if .ctor() doesn't exist, prefer .ctor(IServiceProvider) [if it exists]
-            var ctorWhichTakesServiceProvider = implementationType.GetConstructor(_serviceProviderTypeArray);
+            var ctorWhichTakesServiceProvider = implementationType.GetConstructor(new Type[] { typeof(IServiceProvider) });
             if (ctorWhichTakesServiceProvider != null)
             {
                 return ctorWhichTakesServiceProvider.Invoke(new[] { _services });

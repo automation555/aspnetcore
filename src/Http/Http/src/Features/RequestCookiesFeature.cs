@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Collections.Generic;
@@ -66,7 +66,11 @@ namespace Microsoft.AspNetCore.Http.Features
                 }
 
                 var headers = HttpRequestFeature.Headers;
-                var current = headers.Cookie;
+                StringValues current;
+                if (!headers.TryGetValue(HeaderNames.Cookie, out current))
+                {
+                    current = string.Empty;
+                }
 
                 if (_parsedValues == null || _original != current)
                 {
@@ -84,7 +88,7 @@ namespace Microsoft.AspNetCore.Http.Features
                 {
                     if (_parsedValues == null || _parsedValues.Count == 0)
                     {
-                        HttpRequestFeature.Headers.Cookie = default;
+                        HttpRequestFeature.Headers.Remove(HeaderNames.Cookie);
                     }
                     else
                     {
@@ -94,7 +98,7 @@ namespace Microsoft.AspNetCore.Http.Features
                             headers.Add(new CookieHeaderValue(pair.Key, pair.Value).ToString());
                         }
                         _original = headers.ToArray();
-                        HttpRequestFeature.Headers.Cookie = _original;
+                        HttpRequestFeature.Headers[HeaderNames.Cookie] = _original;
                     }
                 }
             }

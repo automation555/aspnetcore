@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 #nullable disable
 
@@ -203,7 +203,7 @@ namespace Microsoft.AspNetCore.Routing.Matching
             // il.Emit(OpCodes.Ldc_I8, ~0x007F007F007F007FUL);
             //
             // The IL Emit apis don't have overloads that accept ulong or ushort, and will resolve
-            // an overload that does an undesirable conversion (for instance converting ulong to float).
+            // an overload that does an undesirable conversion (for instance convering ulong to float).
             //
             // IMPORTANT
 

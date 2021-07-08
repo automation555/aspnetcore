@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Collections.Generic;
@@ -86,7 +86,6 @@ namespace Microsoft.AspNetCore.Hosting
                 // We need to flow this differently
                 services.TryAddSingleton(sp => new DiagnosticListener("Microsoft.AspNetCore"));
                 services.TryAddSingleton<DiagnosticSource>(sp => sp.GetRequiredService<DiagnosticListener>());
-                services.TryAddSingleton(sp => new ActivitySource("Microsoft.AspNetCore"));
 
                 services.TryAddSingleton<IHttpContextFactory, DefaultHttpContextFactory>();
                 services.TryAddScoped<IMiddlewareFactory, MiddlewareFactory>();
@@ -130,22 +129,14 @@ namespace Microsoft.AspNetCore.Hosting
             }
 
             var exceptions = new List<Exception>();
-            var processed = new HashSet<Assembly>();
-
             _hostingStartupWebHostBuilder = new HostingStartupWebHostBuilder(this);
 
             // Execute the hosting startup assemblies
-            foreach (var assemblyName in webHostOptions.GetFinalHostingStartupAssemblies())
+            foreach (var assemblyName in webHostOptions.GetFinalHostingStartupAssemblies().Distinct(StringComparer.OrdinalIgnoreCase))
             {
                 try
                 {
                     var assembly = Assembly.Load(new AssemblyName(assemblyName));
-
-                    if (!processed.Add(assembly))
-                    {
-                        // Already processed, skip it
-                        continue;
-                    }
 
                     foreach (var attribute in assembly.GetCustomAttributes<HostingStartupAttribute>())
                     {
@@ -351,7 +342,7 @@ namespace Microsoft.AspNetCore.Hosting
             return this;
         }
 
-        private static WebHostBuilderContext GetWebHostBuilderContext(HostBuilderContext context)
+        private WebHostBuilderContext GetWebHostBuilderContext(HostBuilderContext context)
         {
             if (!context.Properties.TryGetValue(typeof(WebHostBuilderContext), out var contextVal))
             {

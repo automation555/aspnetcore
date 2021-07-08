@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Collections.Generic;
@@ -71,7 +71,7 @@ namespace Microsoft.AspNetCore.DataProtection.KeyManagement
         /// <remarks>
         /// This value is currently fixed at 48 hours.
         /// </remarks>
-        internal static TimeSpan KeyPropagationWindow
+        internal TimeSpan KeyPropagationWindow
         {
             get
             {
@@ -89,7 +89,7 @@ namespace Microsoft.AspNetCore.DataProtection.KeyManagement
         /// <remarks>
         /// This value is currently fixed at 24 hours.
         /// </remarks>
-        internal static TimeSpan KeyRingRefreshPeriod
+        internal TimeSpan KeyRingRefreshPeriod
         {
             get
             {
@@ -109,7 +109,7 @@ namespace Microsoft.AspNetCore.DataProtection.KeyManagement
         /// <remarks>
         /// This value is currently fixed at 5 minutes.
         /// </remarks>
-        internal static TimeSpan MaxServerClockSkew
+        internal TimeSpan MaxServerClockSkew
         {
             get
             {

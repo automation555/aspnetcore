@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.IO;
@@ -119,8 +119,8 @@ namespace Microsoft.AspNetCore.Http
 
         public override HostString Host
         {
-            get { return HostString.FromUriComponent(Headers.Host); }
-            set { Headers.Host = value.ToUriComponent(); }
+            get { return HostString.FromUriComponent(Headers[HeaderNames.Host]); }
+            set { Headers[HeaderNames.Host] = value.ToUriComponent(); }
         }
 
         public override IQueryCollection Query
@@ -146,10 +146,10 @@ namespace Microsoft.AspNetCore.Http
             set { RequestCookiesFeature.Cookies = value; }
         }
 
-        public override string? ContentType
+        public override string ContentType
         {
-            get { return Headers.ContentType; }
-            set { Headers.ContentType = value; }
+            get { return Headers[HeaderNames.ContentType]; }
+            set { Headers[HeaderNames.ContentType] = value; }
         }
 
         public override bool HasFormContentType

@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Collections.Generic;
@@ -65,13 +65,11 @@ namespace Microsoft.AspNetCore.Authentication
         /// Collection of parameters that are passed to the authentication handler. These are not intended for
         /// serialization or persistence, only for flowing data between call sites.
         /// </summary>
-        [JsonIgnore]
         public IDictionary<string, object?> Parameters { get; }
 
         /// <summary>
         /// Gets or sets whether the authentication session is persisted across multiple requests.
         /// </summary>
-        [JsonIgnore]
         public bool IsPersistent
         {
             get => GetString(IsPersistentKey) != null;
@@ -81,7 +79,6 @@ namespace Microsoft.AspNetCore.Authentication
         /// <summary>
         /// Gets or sets the full path or absolute URI to be used as an http redirect response value.
         /// </summary>
-        [JsonIgnore]
         public string? RedirectUri
         {
             get => GetString(RedirectUriKey);
@@ -91,7 +88,6 @@ namespace Microsoft.AspNetCore.Authentication
         /// <summary>
         /// Gets or sets the time at which the authentication ticket was issued.
         /// </summary>
-        [JsonIgnore]
         public DateTimeOffset? IssuedUtc
         {
             get => GetDateTimeOffset(IssuedUtcKey);
@@ -101,7 +97,6 @@ namespace Microsoft.AspNetCore.Authentication
         /// <summary>
         /// Gets or sets the time at which the authentication ticket expires.
         /// </summary>
-        [JsonIgnore]
         public DateTimeOffset? ExpiresUtc
         {
             get => GetDateTimeOffset(ExpiresUtcKey);
@@ -111,7 +106,6 @@ namespace Microsoft.AspNetCore.Authentication
         /// <summary>
         /// Gets or sets if refreshing the authentication session should be allowed.
         /// </summary>
-        [JsonIgnore]
         public bool? AllowRefresh
         {
             get => GetBool(RefreshKey);

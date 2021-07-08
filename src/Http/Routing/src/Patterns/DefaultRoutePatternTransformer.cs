@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 #nullable disable
 
@@ -217,7 +217,7 @@ namespace Microsoft.AspNetCore.Routing.Patterns
             return true;
         }
 
-        private static void RemoveParameterDefault(List<RoutePatternPathSegment> segments, List<RoutePatternParameterPart> parameters, RoutePatternParameterPart parameter)
+        private void RemoveParameterDefault(List<RoutePatternPathSegment> segments, List<RoutePatternParameterPart> parameters, RoutePatternParameterPart parameter)
         {
             // We know that a parameter can only appear once, so we only need to rewrite one segment and one parameter.
             for (var i = 0; i < segments.Count; i++)

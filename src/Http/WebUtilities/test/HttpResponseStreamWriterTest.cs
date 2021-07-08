@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using Moq;
 using System;
@@ -663,16 +663,13 @@ namespace Microsoft.AspNetCore.WebUtilities
             }
 
             public override Task WriteAsync(byte[] buffer, int offset, int count, CancellationToken cancellationToken)
-                => WriteAsync(buffer.AsMemory(offset, count), cancellationToken).AsTask();
-
-            public override ValueTask WriteAsync(ReadOnlyMemory<byte> buffer, CancellationToken cancellationToken = default)
             {
                 WriteAsyncCallCount++;
                 if (ThrowOnWrite)
                 {
                     throw new IOException("Test IOException");
                 }
-                return base.WriteAsync(buffer, cancellationToken);
+                return base.WriteAsync(buffer, offset, count, cancellationToken);
             }
 
             protected override void Dispose(bool disposing)

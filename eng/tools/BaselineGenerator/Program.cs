@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.IO;
@@ -100,9 +100,11 @@ namespace PackageBaselineGenerator
             var baselineVersion = input.Root.Attribute("Version").Value;
 
             // Baseline and .NET Core versions always align in non-preview releases.
+            // But, NuspecReader reports netcoreapp5.0 instead of net5.0. We use net5.0 in Baseline.Designer.props.
             var parsedVersion = Version.Parse(baselineVersion);
             var defaultTarget = ((parsedVersion.Major < 5) ? "netcoreapp" : "net") +
                 $"{parsedVersion.Major}.{parsedVersion.Minor}";
+            var matchTarget = $"netcoreapp{parsedVersion.Major}.{parsedVersion.Minor}";
 
             var doc = new XDocument(
                 new XComment(" Auto generated. Do not edit manually, use eng/tools/BaselineGenerator/ to recreate. "),
@@ -168,7 +170,7 @@ namespace PackageBaselineGenerator
                     foreach (var group in reader.NuspecReader.GetDependencyGroups())
                     {
                         // Don't bother generating empty ItemGroup elements.
-                        if (!group.Packages.Any())
+                        if (group.Packages.Count() == 0)
                         {
                             continue;
                         }
@@ -177,7 +179,7 @@ namespace PackageBaselineGenerator
                         var targetCondition = $"'$(TargetFramework)' == '{group.TargetFramework.GetShortFolderName()}'";
                         if (string.Equals(
                             group.TargetFramework.GetShortFolderName(),
-                            defaultTarget,
+                            matchTarget,
                             StringComparison.OrdinalIgnoreCase))
                         {
                             targetCondition =

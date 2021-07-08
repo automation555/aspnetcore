@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Collections.Generic;
@@ -207,11 +207,11 @@ namespace Microsoft.AspNetCore.TestHost
             }
             if (buffer.Offset < 0 || buffer.Offset > buffer.Array.Length)
             {
-                throw new ArgumentOutOfRangeException(nameof(buffer), buffer.Offset, string.Empty);
+                throw new ArgumentOutOfRangeException(nameof(buffer.Offset), buffer.Offset, string.Empty);
             }
             if (buffer.Count < 0 || buffer.Count > buffer.Array.Length - buffer.Offset)
             {
-                throw new ArgumentOutOfRangeException(nameof(buffer), buffer.Count, string.Empty);
+                throw new ArgumentOutOfRangeException(nameof(buffer.Count), buffer.Count, string.Empty);
             }
         }
 

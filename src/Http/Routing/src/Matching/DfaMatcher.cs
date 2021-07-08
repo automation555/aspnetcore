@@ -1,9 +1,8 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Collections.Generic;
-using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing.Patterns;
@@ -28,7 +27,6 @@ namespace Microsoft.AspNetCore.Routing.Matching
             _isDefaultEndpointSelector = selector is DefaultEndpointSelector;
         }
 
-        [SkipLocalsInit]
         public sealed override Task MatchAsync(HttpContext httpContext)
         {
             if (httpContext == null)
@@ -222,7 +220,7 @@ namespace Microsoft.AspNetCore.Routing.Matching
             return (states[destination].Candidates, states[destination].Policies);
         }
 
-        private static void ProcessCaptures(
+        private void ProcessCaptures(
             KeyValuePair<string, object?>[] slots,
             (string parameterName, int segmentIndex, int slotIndex)[] captures,
             string path,
@@ -245,7 +243,7 @@ namespace Microsoft.AspNetCore.Routing.Matching
             }
         }
 
-        private static void ProcessCatchAll(
+        private void ProcessCatchAll(
             KeyValuePair<string, object?>[] slots,
             in (string parameterName, int segmentIndex, int slotIndex) catchAll,
             string path,
@@ -341,38 +339,32 @@ namespace Microsoft.AspNetCore.Routing.Matching
             private static readonly Action<ILogger, string, Exception> _candidatesNotFound = LoggerMessage.Define<string>(
                 LogLevel.Debug,
                 EventIds.CandidatesNotFound,
-                "No candidates found for the request path '{Path}'",
-                skipEnabledCheck: true);
+                "No candidates found for the request path '{Path}'");
 
             private static readonly Action<ILogger, int, string, Exception> _candidatesFound = LoggerMessage.Define<int, string>(
                 LogLevel.Debug,
                 EventIds.CandidatesFound,
-                "{CandidateCount} candidate(s) found for the request path '{Path}'",
-                skipEnabledCheck: true);
+                "{CandidateCount} candidate(s) found for the request path '{Path}'");
 
             private static readonly Action<ILogger, string, string, string, string, Exception> _candidateRejectedByComplexSegment = LoggerMessage.Define<string, string, string, string>(
                 LogLevel.Debug,
                 EventIds.CandidateRejectedByComplexSegment,
-                "Endpoint '{Endpoint}' with route pattern '{RoutePattern}' was rejected by complex segment '{Segment}' for the request path '{Path}'",
-                skipEnabledCheck: true);
+                "Endpoint '{Endpoint}' with route pattern '{RoutePattern}' was rejected by complex segment '{Segment}' for the request path '{Path}'");
 
             private static readonly Action<ILogger, string, string, string, string, object, string, Exception> _candidateRejectedByConstraint = LoggerMessage.Define<string, string, string, string, object, string>(
                 LogLevel.Debug,
                 EventIds.CandidateRejectedByConstraint,
-                "Endpoint '{Endpoint}' with route pattern '{RoutePattern}' was rejected by constraint '{ConstraintName}':'{Constraint}' with value '{RouteValue}' for the request path '{Path}'",
-                skipEnabledCheck: true);
+                "Endpoint '{Endpoint}' with route pattern '{RoutePattern}' was rejected by constraint '{ConstraintName}':'{Constraint}' with value '{RouteValue}' for the request path '{Path}'");
 
             private static readonly Action<ILogger, string, string, string, Exception> _candidateNotValid = LoggerMessage.Define<string, string, string>(
                 LogLevel.Debug,
                 EventIds.CandidateNotValid,
-                "Endpoint '{Endpoint}' with route pattern '{RoutePattern}' is not valid for the request path '{Path}'",
-                skipEnabledCheck: true);
+                "Endpoint '{Endpoint}' with route pattern '{RoutePattern}' is not valid for the request path '{Path}'");
 
             private static readonly Action<ILogger, string, string, string, Exception> _candidateValid = LoggerMessage.Define<string, string, string>(
                 LogLevel.Debug,
                 EventIds.CandidateValid,
-                "Endpoint '{Endpoint}' with route pattern '{RoutePattern}' is valid for the request path '{Path}'",
-                skipEnabledCheck: true);
+                "Endpoint '{Endpoint}' with route pattern '{RoutePattern}' is valid for the request path '{Path}'");
 
             public static void CandidatesNotFound(ILogger logger, string path)
             {

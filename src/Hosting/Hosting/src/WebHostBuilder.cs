@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 #nullable enable
 
@@ -229,20 +229,13 @@ namespace Microsoft.AspNetCore.Hosting
             if (!_options.PreventHostingStartup)
             {
                 var exceptions = new List<Exception>();
-                var processed = new HashSet<Assembly>();
 
                 // Execute the hosting startup assemblies
-                foreach (var assemblyName in _options.GetFinalHostingStartupAssemblies())
+                foreach (var assemblyName in _options.GetFinalHostingStartupAssemblies().Distinct(StringComparer.OrdinalIgnoreCase))
                 {
                     try
                     {
                         var assembly = Assembly.Load(new AssemblyName(assemblyName));
-
-                        if (!processed.Add(assembly))
-                        {
-                            // Already processed, skip it
-                            continue;
-                        }
 
                         foreach (var attribute in assembly.GetCustomAttributes<HostingStartupAttribute>())
                         {
@@ -292,7 +285,6 @@ namespace Microsoft.AspNetCore.Hosting
 
             services.TryAddSingleton(sp => new DiagnosticListener("Microsoft.AspNetCore"));
             services.TryAddSingleton<DiagnosticSource>(sp => sp.GetRequiredService<DiagnosticListener>());
-            services.TryAddSingleton(sp => new ActivitySource("Microsoft.AspNetCore"));
 
             services.AddTransient<IApplicationBuilderFactory, ApplicationBuilderFactory>();
             services.AddTransient<IHttpContextFactory, DefaultHttpContextFactory>();
@@ -338,7 +330,7 @@ namespace Microsoft.AspNetCore.Hosting
             return services;
         }
 
-        private static void AddApplicationServices(IServiceCollection services, IServiceProvider hostingServiceProvider)
+        private void AddApplicationServices(IServiceCollection services, IServiceProvider hostingServiceProvider)
         {
             // We are forwarding services from hosting container so hosting container
             // can still manage their lifetime (disposal) shared instances with application services.
@@ -347,12 +339,9 @@ namespace Microsoft.AspNetCore.Hosting
             var listener = hostingServiceProvider.GetService<DiagnosticListener>();
             services.Replace(ServiceDescriptor.Singleton(typeof(DiagnosticListener), listener!));
             services.Replace(ServiceDescriptor.Singleton(typeof(DiagnosticSource), listener!));
-
-            var activitySource = hostingServiceProvider.GetService<ActivitySource>();
-            services.Replace(ServiceDescriptor.Singleton(typeof(ActivitySource), activitySource!));
         }
 
-        private static string ResolveContentRootPath(string contentRootPath, string basePath)
+        private string ResolveContentRootPath(string contentRootPath, string basePath)
         {
             if (string.IsNullOrEmpty(contentRootPath))
             {
