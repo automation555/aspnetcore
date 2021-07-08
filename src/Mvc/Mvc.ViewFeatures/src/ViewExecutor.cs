@@ -1,20 +1,17 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-#nullable enable
-
 using System;
 using System.Diagnostics;
 using System.IO;
-using System.Text;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Internal;
 using Microsoft.AspNetCore.Mvc.Formatters;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.AspNetCore.Mvc.ViewEngines;
 using Microsoft.AspNetCore.Mvc.ViewFeatures.Filters;
+using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.Options;
 
 namespace Microsoft.AspNetCore.Mvc.ViewFeatures
@@ -106,7 +103,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
         /// <summary>
         /// Gets the <see cref="ITempDataDictionaryFactory"/>.
         /// </summary>
-        protected ITempDataDictionaryFactory? TempDataFactory { get; }
+        protected ITempDataDictionaryFactory TempDataFactory { get; }
 
         /// <summary>
         /// Gets the default <see cref="IViewEngine"/>.
@@ -116,12 +113,12 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
         /// <summary>
         /// Gets the <see cref="MvcViewOptions"/>.
         /// </summary>
-        protected MvcViewOptions? ViewOptions { get; }
+        protected MvcViewOptions ViewOptions { get; }
 
         /// <summary>
         /// Gets the <see cref="IModelMetadataProvider"/>.
         /// </summary>
-        protected IModelMetadataProvider? ModelMetadataProvider { get; }
+        protected IModelMetadataProvider ModelMetadataProvider { get; }
 
         /// <summary>
         /// Gets the <see cref="IHttpResponseStreamWriterFactory"/>.
@@ -148,7 +145,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
             IView view,
             ViewDataDictionary viewData,
             ITempDataDictionary tempData,
-            string? contentType,
+            string contentType,
             int? statusCode)
         {
             if (actionContext == null)
@@ -211,7 +208,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
         /// <returns>A <see cref="Task"/> which will complete when view execution is completed.</returns>
         protected async Task ExecuteAsync(
             ViewContext viewContext,
-            string? contentType,
+            string contentType,
             int? statusCode)
         {
             if (viewContext == null)
@@ -224,8 +221,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
             ResponseContentTypeHelper.ResolveContentTypeAndEncoding(
                 contentType,
                 response.ContentType,
-                (DefaultContentType, Encoding.UTF8),
-                MediaType.GetEncoding,
+                DefaultContentType,
                 out var resolvedContentType,
                 out var resolvedContentTypeEncoding);
 
@@ -238,7 +234,8 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
 
             OnExecuting(viewContext);
 
-            await using (var writer = WriterFactory.CreateWriter(response.Body, resolvedContentTypeEncoding))
+            //await using (var writer = WriterFactory.CreateWriter(response.Body, resolvedContentTypeEncoding))
+            await using (var writer = new HttpResponsePipeWriter(response.BodyWriter, resolvedContentTypeEncoding))
             {
                 var view = viewContext.View;
 

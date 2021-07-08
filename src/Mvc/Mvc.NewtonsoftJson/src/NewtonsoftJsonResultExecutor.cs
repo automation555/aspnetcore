@@ -5,7 +5,6 @@ using System;
 using System.Buffers;
 using System.Text;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Internal;
 using Microsoft.AspNetCore.Mvc.Formatters;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.AspNetCore.WebUtilities;
@@ -101,8 +100,7 @@ namespace Microsoft.AspNetCore.Mvc.NewtonsoftJson
             ResponseContentTypeHelper.ResolveContentTypeAndEncoding(
                 result.ContentType,
                 response.ContentType,
-                (DefaultContentType, Encoding.UTF8),
-                MediaType.GetEncoding,
+                DefaultContentType,
                 out var resolvedContentType,
                 out var resolvedContentTypeEncoding);
 
@@ -115,17 +113,17 @@ namespace Microsoft.AspNetCore.Mvc.NewtonsoftJson
 
             Log.JsonResultExecuting(_logger, result.Value);
 
-            var responseStream = response.Body;
-            FileBufferingWriteStream? fileBufferingWriteStream = null;
+            var responseWriter = response.BodyWriter;
+            FileBufferingPipeWriter fileBufferingWriteStream = null;
             if (!_mvcOptions.SuppressOutputFormatterBuffering)
             {
-                fileBufferingWriteStream = new FileBufferingWriteStream();
-                responseStream = fileBufferingWriteStream;
+                fileBufferingWriteStream = new FileBufferingPipeWriter(responseWriter);
+                responseWriter = fileBufferingWriteStream;
             }
 
             try
             {
-                await using (var writer = _writerFactory.CreateWriter(responseStream, resolvedContentTypeEncoding))
+                await using (var writer = new HttpResponsePipeWriter(responseWriter, resolvedContentTypeEncoding))
                 {
                     using var jsonWriter = new JsonTextWriter(writer);
                     jsonWriter.ArrayPool = _charPool;
@@ -145,7 +143,7 @@ namespace Microsoft.AspNetCore.Mvc.NewtonsoftJson
 
                 if (fileBufferingWriteStream != null)
                 {
-                    await fileBufferingWriteStream.DrainBufferAsync(response.Body);
+                    await fileBufferingWriteStream.DrainBufferAsync();
                 }
             }
             finally
@@ -180,19 +178,23 @@ namespace Microsoft.AspNetCore.Mvc.NewtonsoftJson
 
         private static class Log
         {
-            private static readonly Action<ILogger, string?, Exception?> _jsonResultExecuting = LoggerMessage.Define<string?>(
-                LogLevel.Information,
-                new EventId(1, "JsonResultExecuting"),
-                "Executing JsonResult, writing value of type '{Type}'.",
-                skipEnabledCheck: true);
+            private static readonly Action<ILogger, string, Exception> _jsonResultExecuting;
+            private static readonly Action<ILogger, string, Exception> _bufferingAsyncEnumerable;
 
-            private static readonly Action<ILogger, string?, Exception?> _bufferingAsyncEnumerable = LoggerMessage.Define<string?>(
-                LogLevel.Debug,
-                new EventId(1, "BufferingAsyncEnumerable"),
-                "Buffering IAsyncEnumerable instance of type '{Type}'.",
-                skipEnabledCheck: true);
+            static Log()
+            {
+                _jsonResultExecuting = LoggerMessage.Define<string>(
+                    LogLevel.Information,
+                    new EventId(1, "JsonResultExecuting"),
+                    "Executing JsonResult, writing value of type '{Type}'.");
 
-            public static void JsonResultExecuting(ILogger logger, object? value)
+                _bufferingAsyncEnumerable = LoggerMessage.Define<string>(
+                   LogLevel.Debug,
+                   new EventId(1, "BufferingAsyncEnumerable"),
+                   "Buffering IAsyncEnumerable instance of type '{Type}'.");
+            }
+
+            public static void JsonResultExecuting(ILogger logger, object value)
             {
                 if (logger.IsEnabled(LogLevel.Information))
                 {

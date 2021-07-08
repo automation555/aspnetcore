@@ -24,7 +24,7 @@ namespace Microsoft.AspNetCore.Mvc
             MemoryPoolHttpResponseStreamWriterFactory.DefaultBufferSize;
 
         [Fact]
-        public async Task ContentResult_ExecuteResultAsync_Response_NullContent_SetsContentTypeAndEncoding()
+        public async Task ContentResult_Response_NullContent_SetsContentTypeAndEncoding()
         {
             // Arrange
             var contentResult = new ContentResult
@@ -268,9 +268,7 @@ namespace Microsoft.AspNetCore.Mvc
 
             var services = new ServiceCollection();
             services.AddSingleton<IActionResultExecutor<ContentResult>>(new ContentResultExecutor(
-                new Logger<ContentResultExecutor>(NullLoggerFactory.Instance),
-                new MemoryPoolHttpResponseStreamWriterFactory(ArrayPool<byte>.Shared, charArrayPool.Object)));
-            services.AddSingleton<ILoggerFactory>(NullLoggerFactory.Instance);
+                new Logger<ContentResultExecutor>(NullLoggerFactory.Instance)));
             return services;
         }
 

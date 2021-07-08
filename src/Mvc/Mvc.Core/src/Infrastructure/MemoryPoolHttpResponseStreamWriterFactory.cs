@@ -1,11 +1,10 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-#nullable enable
-
 using System;
 using System.Buffers;
 using System.IO;
+using System.IO.Pipelines;
 using System.Text;
 using Microsoft.AspNetCore.WebUtilities;
 
@@ -27,11 +26,12 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
         /// <see cref="MemoryPoolHttpResponseStreamWriterFactory"/> maintains <see cref="ArrayPool{T}"/>s
         /// for these arrays.
         /// </remarks>
-        public const int DefaultBufferSize = 16 * 1024;
+        public static readonly int DefaultBufferSize = 16 * 1024;
 
         private readonly ArrayPool<byte> _bytePool;
         private readonly ArrayPool<char> _charPool;
 
+        // TODO: remove
         /// <summary>
         /// Creates a new <see cref="MemoryPoolHttpResponseStreamWriterFactory"/>.
         /// </summary>
