@@ -5,7 +5,8 @@ using System;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.IO;
-using Microsoft.AspNetCore.Components.Lifetime;
+using System.Linq;
+using Microsoft.AspNetCore.Components.Infrastructure;
 using Microsoft.AspNetCore.Components.RenderTree;
 using Microsoft.AspNetCore.Components.Routing;
 using Microsoft.AspNetCore.Components.Web;
@@ -35,8 +36,7 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Hosting
         /// </summary>
         /// <param name="args">The argument passed to the application's main method.</param>
         /// <returns>A <see cref="WebAssemblyHostBuilder"/>.</returns>
-        [DynamicDependency(nameof(JSInteropMethods.NotifyLocationChanged), typeof(JSInteropMethods))]
-        [DynamicDependency(nameof(JSInteropMethods.DispatchEvent), typeof(JSInteropMethods))]
+        [DynamicDependency(DynamicallyAccessedMemberTypes.PublicMethods, typeof(JSInteropMethods))]
         [DynamicDependency(JsonSerialized, typeof(WebEventDescriptor))]
         public static WebAssemblyHostBuilder CreateDefault(string[]? args = default)
         {
@@ -234,9 +234,9 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Hosting
             // to configure services inside *that scope* inside their startup code, we create *both* the
             // service provider and the scope here.
             var services = _createServiceProvider();
-            var scope = services.GetRequiredService<IServiceScopeFactory>().CreateAsyncScope();
+            var scope = services.GetRequiredService<IServiceScopeFactory>().CreateScope();
 
-            return new WebAssemblyHost(services, scope, Configuration, RootComponents, _persistedState);
+            return new WebAssemblyHost(services, scope, Configuration, RootComponents.ToArray(), _persistedState);
         }
 
         internal void InitializeDefaultServices()
@@ -245,8 +245,8 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Hosting
             Services.AddSingleton<NavigationManager>(WebAssemblyNavigationManager.Instance);
             Services.AddSingleton<INavigationInterception>(WebAssemblyNavigationInterception.Instance);
             Services.AddSingleton(new LazyAssemblyLoader(DefaultWebAssemblyJSRuntime.Instance));
-            Services.AddSingleton<ComponentApplicationLifetime>();
-            Services.AddSingleton<ComponentApplicationState>(sp => sp.GetRequiredService<ComponentApplicationLifetime>().State);
+            Services.AddSingleton<ComponentStatePersistenceManager>();
+            Services.AddSingleton<PersistentComponentState>(sp => sp.GetRequiredService<ComponentStatePersistenceManager>().State);
             Services.AddSingleton<IErrorBoundaryLogger, WebAssemblyErrorBoundaryLogger>();
             Services.AddLogging(builder =>
             {

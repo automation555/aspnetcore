@@ -3,9 +3,8 @@
   <PropertyGroup>
     <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
     <Description>Build client-side single-page applications (SPAs) with Blazor running under WebAssembly.</Description>
+    <IsShippingPackage>true</IsShippingPackage>
     <NoWarn>$(NoWarn);BL0006</NoWarn>
-    <!-- Workaround for https://github.com/dotnet/runtime/issues/52227 -->
-    <NoWarn>$(NoWarn);CS8603</NoWarn>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <Nullable>enable</Nullable>
     <Trimmable>true</Trimmable>
@@ -24,7 +23,7 @@
   <ItemGroup>
     <Compile Include="$(ComponentsSharedSourceRoot)src\BrowserNavigationManagerInterop.cs" />
     <Compile Include="$(ComponentsSharedSourceRoot)src\JsonSerializerOptionsProvider.cs" />
-    <Compile Include="$(ComponentsSharedSourceRoot)src\WebEventData\*.cs" LinkBase="WebEventData" />
+    <Compile Include="$(ComponentsSharedSourceRoot)src\WebEventData.cs" />
     <Compile Include="$(ComponentsSharedSourceRoot)src\ElementReferenceJsonConverter.cs" />
     <Compile Include="$(ComponentsSharedSourceRoot)src\ComponentParametersTypeCache.cs" />
     <Compile Include="$(ComponentsSharedSourceRoot)src\RootComponentTypeCache.cs" />
@@ -32,8 +31,9 @@
     <Compile Include="$(SharedSourceRoot)Components\WebAssemblyComponentMarker.cs" Link="Prerendering/WebAssemblyComponentMarker.cs" />
     <Compile Include="$(SharedSourceRoot)Components\ComponentParameter.cs" Link="Prerendering/ComponentParameter.cs" />
     <Compile Include="$(SharedSourceRoot)Components\PrerenderComponentApplicationStore.cs" />
+    <Compile Include="$(SharedSourceRoot)Components\PooledByteBufferWritter.cs" LinkBase="Shared" />
     <Compile Include="$(SharedSourceRoot)LinkerFlags.cs" LinkBase="Shared" />
-    <Compile Include="$(ComponentsSharedSourceRoot)src\HotReloadFeature.cs" LinkBase="HotReload" />
+    <Compile Include="$(ComponentsSharedSourceRoot)src\HotReloadEnvironment.cs" LinkBase="HotReload" />
   </ItemGroup>
 
   <ItemGroup>
