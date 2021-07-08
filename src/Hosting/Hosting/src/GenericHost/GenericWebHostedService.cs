@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Collections.Generic;
@@ -24,7 +24,6 @@ namespace Microsoft.AspNetCore.Hosting
                                      IServer server,
                                      ILoggerFactory loggerFactory,
                                      DiagnosticListener diagnosticListener,
-                                     ActivitySource activitySource,
                                      IHttpContextFactory httpContextFactory,
                                      IApplicationBuilderFactory applicationBuilderFactory,
                                      IEnumerable<IStartupFilter> startupFilters,
@@ -36,7 +35,6 @@ namespace Microsoft.AspNetCore.Hosting
             Logger = loggerFactory.CreateLogger("Microsoft.AspNetCore.Hosting.Diagnostics");
             LifetimeLogger = loggerFactory.CreateLogger("Microsoft.Hosting.Lifetime");
             DiagnosticListener = diagnosticListener;
-            ActivitySource = activitySource;
             HttpContextFactory = httpContextFactory;
             ApplicationBuilderFactory = applicationBuilderFactory;
             StartupFilters = startupFilters;
@@ -50,7 +48,6 @@ namespace Microsoft.AspNetCore.Hosting
         // Only for high level lifetime events
         public ILogger LifetimeLogger { get; }
         public DiagnosticListener DiagnosticListener { get; }
-        public ActivitySource ActivitySource { get; }
         public IHttpContextFactory HttpContextFactory { get; }
         public IApplicationBuilderFactory ApplicationBuilderFactory { get; }
         public IEnumerable<IStartupFilter> StartupFilters { get; }
@@ -114,7 +111,7 @@ namespace Microsoft.AspNetCore.Hosting
                 application = ErrorPageBuilder.BuildErrorPageApplication(HostingEnvironment.ContentRootFileProvider, Logger, showDetailedErrors, ex);
             }
 
-            var httpApplication = new HostingApplication(application, Logger, DiagnosticListener, ActivitySource, HttpContextFactory);
+            var httpApplication = new HostingApplication(application, Logger, DiagnosticListener, HttpContextFactory);
 
             await Server.StartAsync(httpApplication, cancellationToken);
 

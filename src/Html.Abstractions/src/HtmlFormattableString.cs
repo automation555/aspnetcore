@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Diagnostics;
@@ -19,7 +19,7 @@ namespace Microsoft.AspNetCore.Html
     {
         private readonly IFormatProvider _formatProvider;
         private readonly string _format;
-        private readonly object?[] _args;
+        private readonly object[] _args;
 
         /// <summary>
         /// Creates a new <see cref="HtmlFormattableString"/> with the given <paramref name="format"/> and
@@ -27,7 +27,7 @@ namespace Microsoft.AspNetCore.Html
         /// </summary>
         /// <param name="format">A composite format string.</param>
         /// <param name="args">An array that contains objects to format.</param>
-        public HtmlFormattableString(string format, params object?[] args)
+        public HtmlFormattableString(string format, params object[] args)
             : this(formatProvider: null, format: format, args: args)
         {
         }
@@ -39,7 +39,7 @@ namespace Microsoft.AspNetCore.Html
         /// <param name="formatProvider">An object that provides culture-specific formatting information.</param>
         /// <param name="format">A composite format string.</param>
         /// <param name="args">An array that contains objects to format.</param>
-        public HtmlFormattableString(IFormatProvider? formatProvider, string format, params object?[] args)
+        public HtmlFormattableString(IFormatProvider? formatProvider, string format, params object[] args)
         {
             if (format == null)
             {
@@ -89,7 +89,7 @@ namespace Microsoft.AspNetCore.Html
         //
         // Plenty of examples of ICustomFormatter and the interactions with string.Format here:
         // https://msdn.microsoft.com/en-us/library/system.string.format(v=vs.110).aspx#Format6_Example
-        private sealed class EncodingFormatProvider : IFormatProvider, ICustomFormatter
+        private class EncodingFormatProvider : IFormatProvider, ICustomFormatter
         {
             private readonly HtmlEncoder _encoder;
             private readonly IFormatProvider _formatProvider;
@@ -109,12 +109,14 @@ namespace Microsoft.AspNetCore.Html
             {
                 // These are the cases we need to special case. We trust the HtmlString or IHtmlContent instance
                 // to do the right thing with encoding.
-                if (arg is HtmlString htmlString)
+                var htmlString = arg as HtmlString;
+                if (htmlString != null)
                 {
                     return htmlString.ToString();
                 }
 
-                if (arg is IHtmlContent htmlContent)
+                var htmlContent = arg as IHtmlContent;
+                if (htmlContent != null)
                 {
                     _writer ??= new StringWriter();
 
@@ -145,7 +147,8 @@ namespace Microsoft.AspNetCore.Html
                 //
                 // An IFormattable will likely call back into the IFormatterProvider and ask for more information
                 // about how to format itself. This is the typical case when IFormatterProvider is a CultureInfo.
-                if (arg is IFormattable formattable)
+                var formattable = arg as IFormattable;
+                if (formattable != null)
                 {
                     var result = formattable.ToString(format, _formatProvider);
                     if (result != null)

@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Linq;
@@ -86,7 +86,7 @@ namespace Microsoft.AspNetCore.Diagnostics
                         app.Use(async (context, next) =>
                         {
                             var beforeNext = context.Request.QueryString;
-                            await next(context);
+                            await next();
                             var afterNext = context.Request.QueryString;
 
                             Assert.Equal(beforeNext, afterNext);
@@ -150,7 +150,7 @@ namespace Microsoft.AspNetCore.Diagnostics
                         {
                             Assert.Empty(context.Request.RouteValues);
                             Assert.Null(context.GetEndpoint());
-                            return next(context);
+                            return next();
                         });
 
                         app.Map(destination, (innerAppBuilder) =>

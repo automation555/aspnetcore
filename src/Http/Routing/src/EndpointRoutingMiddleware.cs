@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Diagnostics;
@@ -142,7 +142,12 @@ namespace Microsoft.AspNetCore.Routing
             {
                 var matcher = _matcherFactory.CreateMatcher(_endpointDataSource);
 
-                _initializationTask = Task.FromResult(matcher);
+                // Now replace the initialization task with one created with the default execution context.
+                // This is important because capturing the execution context will leak memory in ASP.NET Core.
+                using (ExecutionContext.SuppressFlow())
+                {
+                    _initializationTask = Task.FromResult(matcher);
+                }
 
                 // Complete the task, this will unblock any requests that came in while initializing.
                 initialization.SetResult(matcher);

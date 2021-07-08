@@ -1,8 +1,9 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
+using Microsoft.AspNetCore.Testing;
 
 namespace System.Threading.Tasks
 {
@@ -13,6 +14,34 @@ namespace System.Threading.Tasks
 #endif
     static class TaskExtensions
     {
+        private const int DefaultTimeout = 30 * 1000;
+
+        public static Task OrTimeout(this Task task, int milliseconds = DefaultTimeout, [CallerMemberName] string memberName = null, [CallerFilePath] string filePath = null, [CallerLineNumber] int? lineNumber = null)
+        {
+            return OrTimeout(task, new TimeSpan(0, 0, 0, 0, milliseconds), memberName, filePath, lineNumber);
+        }
+
+        public static Task OrTimeout(this Task task, TimeSpan timeout, [CallerMemberName] string memberName = null, [CallerFilePath] string filePath = null, [CallerLineNumber] int? lineNumber = null)
+        {
+            return task.TimeoutAfter(timeout, filePath, lineNumber ?? 0);
+        }
+
+        public static Task<T> OrTimeout<T>(this ValueTask<T> task, int milliseconds = DefaultTimeout, [CallerMemberName] string memberName = null, [CallerFilePath] string filePath = null, [CallerLineNumber] int? lineNumber = null) =>
+            OrTimeout(task, new TimeSpan(0, 0, 0, 0, milliseconds), memberName, filePath, lineNumber);
+
+        public static Task<T> OrTimeout<T>(this ValueTask<T> task, TimeSpan timeout, [CallerMemberName] string memberName = null, [CallerFilePath] string filePath = null, [CallerLineNumber] int? lineNumber = null) =>
+            task.AsTask().OrTimeout(timeout, memberName, filePath, lineNumber);
+
+        public static Task<T> OrTimeout<T>(this Task<T> task, int milliseconds = DefaultTimeout, [CallerMemberName] string memberName = null, [CallerFilePath] string filePath = null, [CallerLineNumber] int? lineNumber = null)
+        {
+            return OrTimeout(task, new TimeSpan(0, 0, 0, 0, milliseconds), memberName, filePath, lineNumber);
+        }
+
+        public static Task<T> OrTimeout<T>(this Task<T> task, TimeSpan timeout, [CallerMemberName] string memberName = null, [CallerFilePath] string filePath = null, [CallerLineNumber] int? lineNumber = null)
+        {
+            return task.TimeoutAfter(timeout, filePath, lineNumber ?? 0);
+        }
+
         public static async Task OrThrowIfOtherFails(this Task task, Task otherTask)
         {
             var completed = await Task.WhenAny(task, otherTask);

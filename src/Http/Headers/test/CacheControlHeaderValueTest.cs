@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Linq;
@@ -48,17 +48,17 @@ namespace Microsoft.Net.Http.Headers
             // String collection properties
             Assert.NotNull(cacheControl.NoCacheHeaders);
             Assert.Throws<ArgumentException>(() => cacheControl.NoCacheHeaders.Add(null));
-            Assert.Throws<FormatException>(() => cacheControl.NoCacheHeaders.Add("invalid PLACEHOLDER"));
-            cacheControl.NoCacheHeaders.Add("PLACEHOLDER");
+            Assert.Throws<FormatException>(() => cacheControl.NoCacheHeaders.Add("invalid token"));
+            cacheControl.NoCacheHeaders.Add("token");
             Assert.Equal(1, cacheControl.NoCacheHeaders.Count);
-            Assert.Equal("PLACEHOLDER", cacheControl.NoCacheHeaders.First());
+            Assert.Equal("token", cacheControl.NoCacheHeaders.First());
 
             Assert.NotNull(cacheControl.PrivateHeaders);
             Assert.Throws<ArgumentException>(() => cacheControl.PrivateHeaders.Add(null));
-            Assert.Throws<FormatException>(() => cacheControl.PrivateHeaders.Add("invalid PLACEHOLDER"));
-            cacheControl.PrivateHeaders.Add("PLACEHOLDER");
+            Assert.Throws<FormatException>(() => cacheControl.PrivateHeaders.Add("invalid token"));
+            cacheControl.PrivateHeaders.Add("token");
             Assert.Equal(1, cacheControl.PrivateHeaders.Count);
-            Assert.Equal("PLACEHOLDER", cacheControl.PrivateHeaders.First());
+            Assert.Equal("token", cacheControl.PrivateHeaders.First());
 
             // NameValueHeaderValue collection property
             Assert.NotNull(cacheControl.Extensions);
@@ -428,7 +428,7 @@ namespace Microsoft.Net.Http.Headers
         [InlineData(null)]
         [InlineData("")]
         [InlineData("    ")]
-        // PLACEHOLDER-only values
+        // Token-only values
         [InlineData("no-store=15")]
         [InlineData("no-store=")]
         [InlineData("no-transform=a")]
@@ -441,17 +441,17 @@ namespace Microsoft.Net.Http.Headers
         [InlineData("must-revalidate=")]
         [InlineData("proxy-revalidate=x")]
         [InlineData("proxy-revalidate=")]
-        // PLACEHOLDER with optional field-name list
+        // Token with optional field-name list
         [InlineData("no-cache=")]
-        [InlineData("no-cache=PLACEHOLDER")]
-        [InlineData("no-cache=\"PLACEHOLDER")]
-        [InlineData("no-cache=\"\"")] // at least one PLACEHOLDER expected as value
+        [InlineData("no-cache=token")]
+        [InlineData("no-cache=\"token")]
+        [InlineData("no-cache=\"\"")] // at least one token expected as value
         [InlineData("private=")]
-        [InlineData("private=PLACEHOLDER")]
-        [InlineData("private=\"PLACEHOLDER")]
-        [InlineData("private=\",\"")] // at least one PLACEHOLDER expected as value
+        [InlineData("private=token")]
+        [InlineData("private=\"token")]
+        [InlineData("private=\",\"")] // at least one token expected as value
         [InlineData("private=\"=\"")]
-        // PLACEHOLDER with delta-seconds value
+        // Token with delta-seconds value
         [InlineData("max-age")]
         [InlineData("max-age=")]
         [InlineData("max-age=a")]

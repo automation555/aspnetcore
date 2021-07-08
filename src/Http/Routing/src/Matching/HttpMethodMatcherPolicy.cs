@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Collections.Generic;
@@ -20,6 +20,8 @@ namespace Microsoft.AspNetCore.Routing.Matching
     public sealed class HttpMethodMatcherPolicy : MatcherPolicy, IEndpointComparerPolicy, INodeBuilderPolicy, IEndpointSelectorPolicy
     {
         // Used in tests
+        internal static readonly string OriginHeader = "Origin";
+        internal static readonly string AccessControlRequestMethod = "Access-Control-Request-Method";
         internal static readonly string PreflightHttpMethod = HttpMethods.Options;
 
         // Used in tests
@@ -66,7 +68,7 @@ namespace Microsoft.AspNetCore.Routing.Matching
             return ContainsDynamicEndpoints(endpoints);
         }
 
-        private static bool AppliesToEndpointsCore(IReadOnlyList<Endpoint> endpoints)
+        private bool AppliesToEndpointsCore(IReadOnlyList<Endpoint> endpoints)
         {
             for (var i = 0; i < endpoints.Count; i++)
             {
@@ -98,7 +100,7 @@ namespace Microsoft.AspNetCore.Routing.Matching
             }
 
             // Returning a 405 here requires us to return keep track of all 'seen' HTTP methods. We allocate to
-            // keep track of this because we either need to keep track of the HTTP methods or keep track of the
+            // keep track of this beause we either need to keep track of the HTTP methods or keep track of the
             // endpoints - both allocate.
             //
             // Those code only runs in the presence of dynamic endpoints anyway.
@@ -402,7 +404,7 @@ namespace Microsoft.AspNetCore.Routing.Matching
             }
         }
 
-        private static Endpoint CreateRejectionEndpoint(IEnumerable<string> httpMethods)
+        private Endpoint CreateRejectionEndpoint(IEnumerable<string> httpMethods)
         {
             var allow = string.Join(", ", httpMethods);
             return new Endpoint(
@@ -412,7 +414,7 @@ namespace Microsoft.AspNetCore.Routing.Matching
 
                     // Prevent ArgumentException from duplicate key if header already added, such as when the
                     // request is re-executed by an error handler (see https://github.com/dotnet/aspnetcore/issues/6415)
-                    context.Response.Headers.Allow = allow;
+                    context.Response.Headers[HeaderNames.Allow] = allow;
 
                     return Task.CompletedTask;
                 },

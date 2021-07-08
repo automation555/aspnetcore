@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Buffers;
@@ -46,23 +46,25 @@ namespace Microsoft.AspNetCore.WebUtilities
         }
 
         public void Add(byte[] buffer, int offset, int count)
-            => Add(buffer.AsMemory(offset, count));
-
-        public void Add(ReadOnlyMemory<byte> memory)
         {
             ThrowIfDisposed();
 
-            while (!memory.IsEmpty)
+            while (count > 0)
             {
                 var currentPage = CurrentPage;
-                var copyLength = Math.Min(memory.Length, currentPage.Length - _currentPageIndex);
+                var copyLength = Math.Min(count, currentPage.Length - _currentPageIndex);
 
-                memory.Slice(0, copyLength).CopyTo(currentPage.AsMemory(_currentPageIndex, copyLength));
+                Buffer.BlockCopy(
+                    buffer,
+                    offset,
+                    currentPage,
+                    _currentPageIndex,
+                    copyLength);
 
                 Length += copyLength;
                 _currentPageIndex += copyLength;
-
-                memory = memory.Slice(copyLength);
+                offset += copyLength;
+                count -= copyLength;
             }
         }
 
@@ -111,7 +113,7 @@ namespace Microsoft.AspNetCore.WebUtilities
                     _currentPageIndex :
                     page.Length;
 
-                await stream.WriteAsync(page.AsMemory(0, length), cancellationToken);
+                await stream.WriteAsync(page, 0, length, cancellationToken);
             }
 
             ClearBuffers();

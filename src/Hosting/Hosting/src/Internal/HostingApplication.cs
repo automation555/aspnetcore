@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Diagnostics;
@@ -23,11 +23,10 @@ namespace Microsoft.AspNetCore.Hosting
             RequestDelegate application,
             ILogger logger,
             DiagnosticListener diagnosticSource,
-            ActivitySource activitySource,
             IHttpContextFactory httpContextFactory)
         {
             _application = application;
-            _diagnostics = new HostingApplicationDiagnostics(logger, diagnosticSource, activitySource);
+            _diagnostics = new HostingApplicationDiagnostics(logger, diagnosticSource);
             if (httpContextFactory is DefaultHttpContextFactory factory)
             {
                 _defaultHttpContextFactory = factory;
@@ -111,7 +110,7 @@ namespace Microsoft.AspNetCore.Hosting
                 _httpContextFactory!.Dispose(httpContext);
             }
 
-            HostingApplicationDiagnostics.ContextDisposed(context);
+            _diagnostics.ContextDisposed(context);
 
             // Reset the context as it may be pooled
             context.Reset();
@@ -122,28 +121,12 @@ namespace Microsoft.AspNetCore.Hosting
         {
             public HttpContext? HttpContext { get; set; }
             public IDisposable? Scope { get; set; }
-            public Activity? Activity
-            {
-                get => HttpActivityFeature?.Activity;
-                set
-                {
-                    if (HttpActivityFeature is null)
-                    {
-                        HttpActivityFeature = new ActivityFeature(value!);
-                    }
-                    else
-                    {
-                        HttpActivityFeature.Activity = value!;
-                    }
-                }
-            }
+            public Activity? Activity { get; set; }
             internal HostingRequestStartingLog? StartLog { get; set; }
 
             public long StartTimestamp { get; set; }
             internal bool HasDiagnosticListener { get; set; }
             public bool EventLogEnabled { get; set; }
-
-            internal IHttpActivityFeature? HttpActivityFeature;
 
             public void Reset()
             {

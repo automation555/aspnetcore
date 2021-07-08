@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Collections.Generic;
@@ -81,9 +81,9 @@ namespace Microsoft.AspNetCore.Diagnostics.HealthChecks
             {
                 // Similar to: https://github.com/aspnet/Security/blob/7b6c9cf0eeb149f2142dedd55a17430e7831ea99/src/Microsoft.AspNetCore.Authentication.Cookies/CookieAuthenticationHandler.cs#L377-L379
                 var headers = httpContext.Response.Headers;
-                headers.CacheControl = "no-store, no-cache";
-                headers.Pragma = "no-cache";
-                headers.Expires = "Thu, 01 Jan 1970 00:00:00 GMT";
+                headers[HeaderNames.CacheControl] = "no-store, no-cache";
+                headers[HeaderNames.Pragma] = "no-cache";
+                headers[HeaderNames.Expires] = "Thu, 01 Jan 1970 00:00:00 GMT";
             }
 
             if (_healthCheckOptions.ResponseWriter != null)

@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Collections.Generic;
@@ -8,7 +8,6 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore.Views;
-using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -48,7 +47,6 @@ namespace Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore
             if (!(errorContext.Exception is DbException))
             {
                 await next(errorContext);
-                return;
             }
 
             try
@@ -87,21 +85,8 @@ namespace Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore
             catch (Exception e)
             {
                 _logger.DatabaseErrorPageMiddlewareException(e);
-            }
-
-            // Error could not be handled
-            var response = errorContext.HttpContext.Response;
-
-            if (response.HasStarted)
-            {
-                _logger.ResponseStartedDatabaseDeveloperPageExceptionFilter();
                 return;
             }
-
-            // Try the next filter
-            response.Clear();
-            response.StatusCode = 500;
-            await next(errorContext);
         }
     }
 }

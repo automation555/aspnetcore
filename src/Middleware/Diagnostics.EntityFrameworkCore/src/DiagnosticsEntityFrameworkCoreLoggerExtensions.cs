@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using Microsoft.Extensions.Logging;
@@ -75,10 +75,6 @@ namespace Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore
             new EventId(7, "DatabaseErrorPageException"),
             "An exception occurred while calculating the database error page content. Skipping display of the database error page.");
 
-        // DatabaseDeveloperPageExceptionFilter
-        private static readonly Action<ILogger, Exception?> _responseStartedDatabaseDeveloperPageExceptionFilter =
-            LoggerMessage.Define(LogLevel.Warning, new EventId(1, "ResponseStarted"), "The response has already started, the next developer page exception filter will not be executed.");
-
         public static void NoContextType(this ILogger logger)
         {
             _noContextType(logger, null);
@@ -142,11 +138,6 @@ namespace Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore
         public static void DatabaseErrorPageMiddlewareException(this ILogger logger, Exception exception)
         {
             _databaseErrorPageMiddlewareException(logger, exception);
-        }
-
-        public static void ResponseStartedDatabaseDeveloperPageExceptionFilter(this ILogger logger)
-        {
-            _responseStartedDatabaseDeveloperPageExceptionFilter(logger, null);
         }
     }
 }

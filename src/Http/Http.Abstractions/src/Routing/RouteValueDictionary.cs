@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Collections;
@@ -19,7 +19,7 @@ namespace Microsoft.AspNetCore.Routing
     public class RouteValueDictionary : IDictionary<string, object?>, IReadOnlyDictionary<string, object?>
     {
         // 4 is a good default capacity here because that leaves enough space for area/controller/action/id
-        private readonly int DefaultCapacity = 4;
+        private const int DefaultCapacity = 4;
 
         internal KeyValuePair<string, object?>[] _arrayStorage;
         internal PropertyStorage? _propertyStorage;
@@ -675,7 +675,7 @@ namespace Microsoft.AspNetCore.Routing
             {
                 if (dictionary == null)
                 {
-                    throw new ArgumentNullException(nameof(dictionary));
+                    throw new ArgumentNullException();
                 }
 
                 _dictionary = dictionary;

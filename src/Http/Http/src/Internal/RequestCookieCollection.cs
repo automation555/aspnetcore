@@ -1,14 +1,12 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using Microsoft.Extensions.Primitives;
-using Microsoft.AspNetCore.Internal;
 using Microsoft.Net.Http.Headers;
-using System.Linq;
 
 namespace Microsoft.AspNetCore.Http
 {
@@ -16,27 +14,25 @@ namespace Microsoft.AspNetCore.Http
     {
         public static readonly RequestCookieCollection Empty = new RequestCookieCollection();
         private static readonly string[] EmptyKeys = Array.Empty<string>();
-
+        private static readonly Enumerator EmptyEnumerator = new Enumerator();
         // Pre-box
-        private static readonly IEnumerator<KeyValuePair<string, string>> EmptyIEnumeratorType = default(Enumerator);
-        private static readonly IEnumerator EmptyIEnumerator = default(Enumerator);
+        private static readonly IEnumerator<KeyValuePair<string, string>> EmptyIEnumeratorType = EmptyEnumerator;
+        private static readonly IEnumerator EmptyIEnumerator = EmptyEnumerator;
 
-        private AdaptiveCapacityDictionary<string, string> Store { get; set; }
+        private Dictionary<string, string>? Store { get; set; }
 
         public RequestCookieCollection()
         {
-            Store = new AdaptiveCapacityDictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+        }
+
+        public RequestCookieCollection(Dictionary<string, string> store)
+        {
+            Store = store;
         }
 
         public RequestCookieCollection(int capacity)
         {
-            Store = new AdaptiveCapacityDictionary<string, string>(capacity, StringComparer.OrdinalIgnoreCase);
-        }
-
-        // For tests
-        public RequestCookieCollection(Dictionary<string, string> store)
-        {
-            Store = new AdaptiveCapacityDictionary<string, string>(store);
+            Store = new Dictionary<string, string>(capacity, StringComparer.OrdinalIgnoreCase);
         }
 
         public string? this[string key]
@@ -125,7 +121,6 @@ namespace Microsoft.AspNetCore.Http
                 value = null;
                 return false;
             }
-
             return Store.TryGetValue(key, out value);
         }
 
@@ -138,7 +133,7 @@ namespace Microsoft.AspNetCore.Http
             if (Store == null || Store.Count == 0)
             {
                 // Non-boxed Enumerator
-                return default;
+                return EmptyEnumerator;
             }
             // Non-boxed Enumerator
             return new Enumerator(Store.GetEnumerator());
@@ -177,10 +172,10 @@ namespace Microsoft.AspNetCore.Http
         public struct Enumerator : IEnumerator<KeyValuePair<string, string>>
         {
             // Do NOT make this readonly, or MoveNext will not work
-            private AdaptiveCapacityDictionary<string, string>.Enumerator _dictionaryEnumerator;
+            private Dictionary<string, string>.Enumerator _dictionaryEnumerator;
             private bool _notEmpty;
 
-            internal Enumerator(AdaptiveCapacityDictionary<string, string>.Enumerator dictionaryEnumerator)
+            internal Enumerator(Dictionary<string, string>.Enumerator dictionaryEnumerator)
             {
                 _dictionaryEnumerator = dictionaryEnumerator;
                 _notEmpty = true;
@@ -202,7 +197,7 @@ namespace Microsoft.AspNetCore.Http
                     if (_notEmpty)
                     {
                         var current = _dictionaryEnumerator.Current;
-                        return new KeyValuePair<string, string>(current.Key, (string)current.Value!);
+                        return new KeyValuePair<string, string>(current.Key, current.Value);
                     }
                     return default(KeyValuePair<string, string>);
                 }

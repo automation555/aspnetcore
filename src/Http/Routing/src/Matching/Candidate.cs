@@ -1,5 +1,5 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Collections.Generic;
@@ -45,7 +45,7 @@ namespace Microsoft.AspNetCore.Routing.Matching
         // that point.
         //
         // Score is not part of the Endpoint itself, because it's contextual based on where
-        // the endpoint appears. An Endpoint is often be a member of multiple candidate sets.
+        // the endpoint appears. An Endpoint is often be a member of multiple candiate sets.
         public readonly int Score;
 
         // Used in tests.

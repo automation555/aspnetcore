@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Collections;
@@ -17,9 +17,10 @@ namespace Microsoft.AspNetCore.Http
     {
         private static readonly string[] EmptyKeys = Array.Empty<string>();
         private static readonly StringValues[] EmptyValues = Array.Empty<StringValues>();
+        private static readonly Enumerator EmptyEnumerator = new Enumerator();
         // Pre-box
-        private static readonly IEnumerator<KeyValuePair<string, StringValues>> EmptyIEnumeratorType = default(Enumerator);
-        private static readonly IEnumerator EmptyIEnumerator = default(Enumerator);
+        private static readonly IEnumerator<KeyValuePair<string, StringValues>> EmptyIEnumeratorType = EmptyEnumerator;
+        private static readonly IEnumerator EmptyIEnumerator = EmptyEnumerator;
 
         /// <summary>
         /// Initializes a new instance of <see cref="HeaderDictionary"/>.
@@ -187,7 +188,7 @@ namespace Microsoft.AspNetCore.Http
         {
             if (item.Key == null)
             {
-                throw new ArgumentException("The key is null");
+                throw new ArgumentNullException("The key is null");
             }
             ThrowIfReadOnly();
             EnsureStore(1);
@@ -328,7 +329,7 @@ namespace Microsoft.AspNetCore.Http
             if (Store == null || Store.Count == 0)
             {
                 // Non-boxed Enumerator
-                return default;
+                return EmptyEnumerator;
             }
             return new Enumerator(Store.GetEnumerator());
         }

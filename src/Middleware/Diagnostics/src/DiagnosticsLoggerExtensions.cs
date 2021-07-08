@@ -1,8 +1,7 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
-using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Diagnostics
@@ -19,6 +18,9 @@ namespace Microsoft.AspNetCore.Diagnostics
 
         private static readonly Action<ILogger, Exception> _errorHandlerException =
             LoggerMessage.Define(LogLevel.Error, new EventId(3, "Exception"), "An exception was thrown attempting to execute the error handler.");
+
+        private static readonly Action<ILogger, Exception?> _errorHandlerNotFound =
+            LoggerMessage.Define(LogLevel.Warning, new EventId(4, "HandlerNotFound"), "No exception handler was found, rethrowing original exception.");
 
         // DeveloperExceptionPageMiddleware
         private static readonly Action<ILogger, Exception?> _responseStartedErrorPageMiddleware =
@@ -40,6 +42,11 @@ namespace Microsoft.AspNetCore.Diagnostics
         public static void ErrorHandlerException(this ILogger logger, Exception exception)
         {
             _errorHandlerException(logger, exception);
+        }
+
+        public static void ErrorHandlerNotFound(this ILogger logger)
+        {
+            _errorHandlerNotFound(logger, null);
         }
 
         public static void ResponseStartedErrorPageMiddleware(this ILogger logger)

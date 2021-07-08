@@ -1,3 +1,6 @@
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
+
 using System;
 using System.Collections.Generic;
 using System.Net.Http;
@@ -111,10 +114,11 @@ namespace HeaderPropagationSample
 
             var threshold = 0.80; // 20% chance for each feature in beta.
 
+            var random = new Random();
             var values = new List<string>();
             for (var i = 0; i < features.Length; i++)
             {
-                if (Random.Shared.NextDouble() > threshold)
+                if (random.NextDouble() > threshold)
                 {
                     values.Add(features[i]);
                 }

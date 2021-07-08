@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.IO;
@@ -57,13 +57,13 @@ namespace Microsoft.AspNetCore.HttpOverrides
                         app.Use(async (context, next) =>
                         {
                             Assert.Null(context.Connection.ClientCertificate);
-                            await next(context);
+                            await next();
                         });
                         app.UseCertificateForwarding();
                         app.Use(async (context, next) =>
                         {
                             Assert.Equal(context.Connection.ClientCertificate, Certificates.SelfSignedValidWithNoEku);
-                            await next(context);
+                            await next();
                         });
                     });
                 }).Build();
@@ -96,13 +96,13 @@ namespace Microsoft.AspNetCore.HttpOverrides
                         {
                             Assert.Null(context.Connection.ClientCertificate);
                             context.Connection.ClientCertificate = Certificates.SelfSignedNotYetValid;
-                            await next(context);
+                            await next();
                         });
                         app.UseCertificateForwarding();
                         app.Use(async (context, next) =>
                         {
                             Assert.Equal(context.Connection.ClientCertificate, Certificates.SelfSignedValidWithNoEku);
-                            await next(context);
+                            await next();
                         });
                     });
                 }).Build();
@@ -134,13 +134,13 @@ namespace Microsoft.AspNetCore.HttpOverrides
                         app.Use(async (context, next) =>
                         {
                             Assert.Null(context.Connection.ClientCertificate);
-                            await next(context);
+                            await next();
                         });
                         app.UseCertificateForwarding();
                         app.Use(async (context, next) =>
                         {
                             Assert.Equal(context.Connection.ClientCertificate, Certificates.SelfSignedValidWithNoEku);
-                            await next(context);
+                            await next();
                         });
                     });
                 }).Build();
@@ -172,13 +172,13 @@ namespace Microsoft.AspNetCore.HttpOverrides
                         app.Use(async (context, next) =>
                         {
                             Assert.Null(context.Connection.ClientCertificate);
-                            await next(context);
+                            await next();
                         });
                         app.UseCertificateForwarding();
                         app.Use(async (context, next) =>
                         {
                             Assert.Null(context.Connection.ClientCertificate);
-                            await next(context);
+                            await next();
                         });
                     });
                 }).Build();
@@ -210,13 +210,13 @@ namespace Microsoft.AspNetCore.HttpOverrides
                         app.Use(async (context, next) =>
                         {
                             Assert.Null(context.Connection.ClientCertificate);
-                            await next(context);
+                            await next();
                         });
                         app.UseCertificateForwarding();
                         app.Use(async (context, next) =>
                         {
                             Assert.Null(context.Connection.ClientCertificate);
-                            await next(context);
+                            await next();
                         });
                     });
                 }).Build();

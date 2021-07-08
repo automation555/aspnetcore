@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Buffers;
@@ -19,6 +19,7 @@ namespace Microsoft.AspNetCore.WebUtilities
     /// </summary>
     public class HttpResponseStreamWriter : TextWriter
     {
+        private const int MinBufferSize = 128;
         internal const int DefaultBufferSize = 16 * 1024;
 
         private Stream _stream;
@@ -530,7 +531,7 @@ namespace Microsoft.AspNetCore.WebUtilities
 
             if (count > 0)
             {
-                await _stream.WriteAsync(_byteBuffer.AsMemory(0, count));
+                await _stream.WriteAsync(_byteBuffer, 0, count);
             }
         }
 

@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Diagnostics;
@@ -132,8 +132,7 @@ namespace Microsoft.AspNetCore.Diagnostics
 
                 await _options.ExceptionHandler!(context);
 
-                // If the response has already started, assume exception handler was successful.
-                if (context.Response.HasStarted || context.Response.StatusCode != StatusCodes.Status404NotFound || _options.AllowStatusCode404Response)
+                if (context.Response.StatusCode != StatusCodes.Status404NotFound || _options.AllowStatusCode404Response)
                 {
                     if (_diagnosticListener.IsEnabled() && _diagnosticListener.IsEnabled("Microsoft.AspNetCore.Diagnostics.HandledException"))
                     {
@@ -143,9 +142,7 @@ namespace Microsoft.AspNetCore.Diagnostics
                     return;
                 }
 
-                edi = ExceptionDispatchInfo.Capture(new InvalidOperationException($"The exception handler configured on {nameof(ExceptionHandlerOptions)} produced a 404 status response. " +
-                    $"This {nameof(InvalidOperationException)} containing the original exception was thrown since this is often due to a misconfigured {nameof(ExceptionHandlerOptions.ExceptionHandlingPath)}. " +
-                    $"If the exception handler is expected to return 404 status responses then set {nameof(ExceptionHandlerOptions.AllowStatusCode404Response)} to true.", edi.SourceException));
+                _logger.ErrorHandlerNotFound();
             }
             catch (Exception ex2)
             {
@@ -157,7 +154,7 @@ namespace Microsoft.AspNetCore.Diagnostics
                 context.Request.Path = originalPath;
             }
 
-            edi.Throw(); // Re-throw wrapped exception or the original if we couldn't handle it
+            edi.Throw(); // Re-throw the original if we couldn't handle it
         }
 
         private static void ClearHttpContext(HttpContext context)
@@ -174,10 +171,10 @@ namespace Microsoft.AspNetCore.Diagnostics
         private static Task ClearCacheHeaders(object state)
         {
             var headers = ((HttpResponse)state).Headers;
-            headers.CacheControl = "no-cache,no-store";
-            headers.Pragma = "no-cache";
-            headers.Expires = "-1";
-            headers.ETag = default;
+            headers[HeaderNames.CacheControl] = "no-cache,no-store";
+            headers[HeaderNames.Pragma] = "no-cache";
+            headers[HeaderNames.Expires] = "-1";
+            headers.Remove(HeaderNames.ETag);
             return Task.CompletedTask;
         }
     }

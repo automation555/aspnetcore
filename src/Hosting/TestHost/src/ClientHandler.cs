@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Collections.Generic;
@@ -184,16 +184,12 @@ namespace Microsoft.AspNetCore.TestHost
             // Copy trailers to the response message when the response stream is complete
             contextBuilder.RegisterResponseReadCompleteCallback(context =>
             {
-                var responseTrailersFeature = context.Features.Get<IHttpResponseTrailersFeature>();
+                var responseTrailersFeature = context.Features.Get<IHttpResponseTrailersFeature>()!;
 
-                // Trailers collection is settable so double check the app hasn't set it to null.
-                if (responseTrailersFeature?.Trailers != null)
+                foreach (var trailer in responseTrailersFeature.Trailers)
                 {
-                    foreach (var trailer in responseTrailersFeature.Trailers)
-                    {
-                        bool success = response.TrailingHeaders.TryAddWithoutValidation(trailer.Key, (IEnumerable<string>)trailer.Value);
-                        Contract.Assert(success, "Bad trailer");
-                    }
+                    bool success = response.TrailingHeaders.TryAddWithoutValidation(trailer.Key, (IEnumerable<string>)trailer.Value);
+                    Contract.Assert(success, "Bad trailer");
                 }
             });
 

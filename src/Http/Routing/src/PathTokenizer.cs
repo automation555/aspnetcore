@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 #nullable disable
 
@@ -47,7 +47,7 @@ namespace Microsoft.AspNetCore.Routing
                         return _count;
                     }
 
-                    // This is a non-trivial PathString
+                    // This is a non-trival PathString
                     _count = 1;
 
                     // Since a non-empty PathString must begin with a `/`, we can just count the number of occurrences

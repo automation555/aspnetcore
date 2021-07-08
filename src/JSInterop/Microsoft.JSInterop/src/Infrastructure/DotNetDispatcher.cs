@@ -1,20 +1,16 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
-using System.Buffers;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
+using System.Linq;
 using System.Reflection;
-using System.Reflection.Metadata;
 using System.Runtime.ExceptionServices;
 using System.Text;
 using System.Text.Json;
 using System.Threading.Tasks;
-
-[assembly: MetadataUpdateHandler(typeof(Microsoft.JSInterop.Infrastructure.DotNetDispatcher))]
 
 namespace Microsoft.JSInterop.Infrastructure
 {
@@ -110,28 +106,24 @@ namespace Microsoft.JSInterop.Infrastructure
             {
                 // Returned a task - we need to continue that task and then report an exception
                 // or return the value.
-                task.ContinueWith(t => EndInvokeDotNetAfterTask(t, jsRuntime, invocationInfo), TaskScheduler.Current);
+                task.ContinueWith(t =>
+                {
+                    if (t.Exception != null)
+                    {
+                        var exceptionDispatchInfo = ExceptionDispatchInfo.Capture(t.Exception.GetBaseException());
+                        var dispatchResult = new DotNetInvocationResult(exceptionDispatchInfo.SourceException, "InvocationFailure");
+                        jsRuntime.EndInvokeDotNet(invocationInfo, dispatchResult);
+                    }
+
+                    var result = TaskGenericsUtil.GetTaskResult(task);
+                    jsRuntime.EndInvokeDotNet(invocationInfo, new DotNetInvocationResult(result));
+                }, TaskScheduler.Current);
             }
             else
             {
-                var syncResultJson = JsonSerializer.Serialize(syncResult, jsRuntime.JsonSerializerOptions);
-                var dispatchResult = new DotNetInvocationResult(syncResultJson);
+                var dispatchResult = new DotNetInvocationResult(syncResult);
                 jsRuntime.EndInvokeDotNet(invocationInfo, dispatchResult);
             }
-        }
-
-        private static void EndInvokeDotNetAfterTask(Task task, JSRuntime jsRuntime, in DotNetInvocationInfo invocationInfo)
-        {
-            if (task.Exception != null)
-            {
-                var exceptionDispatchInfo = ExceptionDispatchInfo.Capture(task.Exception.GetBaseException());
-                var dispatchResult = new DotNetInvocationResult(exceptionDispatchInfo.SourceException, "InvocationFailure");
-                jsRuntime.EndInvokeDotNet(invocationInfo, dispatchResult);
-            }
-
-            var result = TaskGenericsUtil.GetTaskResult(task);
-            var resultJson = JsonSerializer.Serialize(result, jsRuntime.JsonSerializerOptions);
-            jsRuntime.EndInvokeDotNet(invocationInfo, new DotNetInvocationResult(resultJson));
         }
 
         private static object? InvokeSynchronously(JSRuntime jsRuntime, in DotNetInvocationInfo callInfo, IDotNetObjectReference? objectReference, string argsJson)
@@ -190,73 +182,57 @@ namespace Microsoft.JSInterop.Infrastructure
                 return Array.Empty<object>();
             }
 
-            var count = Encoding.UTF8.GetByteCount(arguments);
-            var buffer = ArrayPool<byte>.Shared.Rent(count);
-            try
+            var utf8JsonBytes = Encoding.UTF8.GetBytes(arguments);
+            var reader = new Utf8JsonReader(utf8JsonBytes);
+            if (!reader.Read() || reader.TokenType != JsonTokenType.StartArray)
             {
-                var receivedBytes = Encoding.UTF8.GetBytes(arguments, buffer);
-                Debug.Assert(count == receivedBytes);
-
-                var reader = new Utf8JsonReader(buffer.AsSpan(0, count));
-                if (!reader.Read() || reader.TokenType != JsonTokenType.StartArray)
-                {
-                    throw new JsonException("Invalid JSON");
-                }
-
-                var suppliedArgs = new object?[parameterTypes.Length];
-
-                var index = 0;
-                while (index < parameterTypes.Length && reader.Read() && reader.TokenType != JsonTokenType.EndArray)
-                {
-                    var parameterType = parameterTypes[index];
-                    if (reader.TokenType == JsonTokenType.StartObject && IsIncorrectDotNetObjectRefUse(parameterType, reader))
-                    {
-                        throw new InvalidOperationException($"In call to '{methodIdentifier}', parameter of type '{parameterType.Name}' at index {(index + 1)} must be declared as type 'DotNetObjectRef<{parameterType.Name}>' to receive the incoming value.");
-                    }
-
-                    suppliedArgs[index] = JsonSerializer.Deserialize(ref reader, parameterType, jsRuntime.JsonSerializerOptions);
-                    index++;
-                }
-
-                // Note it's possible not all ByteArraysToBeRevived were actually revived
-                // due to potential differences between the JS & .NET data models for a
-                // particular type.
-                jsRuntime.ByteArraysToBeRevived.Clear();
-
-                if (index < parameterTypes.Length)
-                {
-                    // If we parsed fewer parameters, we can always make a definitive claim about how many parameters were received.
-                    throw new ArgumentException($"The call to '{methodIdentifier}' expects '{parameterTypes.Length}' parameters, but received '{index}'.");
-                }
-
-                if (!reader.Read() || reader.TokenType != JsonTokenType.EndArray)
-                {
-                    // Either we received more parameters than we expected or the JSON is malformed.
-                    throw new JsonException($"Unexpected JSON token {reader.TokenType}. Ensure that the call to `{methodIdentifier}' is supplied with exactly '{parameterTypes.Length}' parameters.");
-                }
-
-                return suppliedArgs;
-
-                // Note that the JsonReader instance is intentionally not passed by ref (or an in parameter) since we want a copy of the original reader.
-                static bool IsIncorrectDotNetObjectRefUse(Type parameterType, Utf8JsonReader jsonReader)
-                {
-                    // Check for incorrect use of DotNetObjectRef<T> at the top level. We know it's
-                    // an incorrect use if there's a object that looks like { '__dotNetObject': <some number> },
-                    // but we aren't assigning to DotNetObjectRef{T}.
-                    if (jsonReader.Read() &&
-                        jsonReader.TokenType == JsonTokenType.PropertyName &&
-                        jsonReader.ValueTextEquals(DotNetObjectRefKey.EncodedUtf8Bytes))
-                    {
-                        // The JSON payload has the shape we expect from a DotNetObjectRef instance.
-                        return !parameterType.IsGenericType || parameterType.GetGenericTypeDefinition() != typeof(DotNetObjectReference<>);
-                    }
-
-                    return false;
-                }
+                throw new JsonException("Invalid JSON");
             }
-            finally
+
+            var suppliedArgs = new object?[parameterTypes.Length];
+
+            var index = 0;
+            while (index < parameterTypes.Length && reader.Read() && reader.TokenType != JsonTokenType.EndArray)
             {
-                ArrayPool<byte>.Shared.Return(buffer);
+                var parameterType = parameterTypes[index];
+                if (reader.TokenType == JsonTokenType.StartObject && IsIncorrectDotNetObjectRefUse(parameterType, reader))
+                {
+                    throw new InvalidOperationException($"In call to '{methodIdentifier}', parameter of type '{parameterType.Name}' at index {(index + 1)} must be declared as type 'DotNetObjectRef<{parameterType.Name}>' to receive the incoming value.");
+                }
+
+                suppliedArgs[index] = JsonSerializer.Deserialize(ref reader, parameterType, jsRuntime.JsonSerializerOptions);
+                index++;
+            }
+
+            if (index < parameterTypes.Length)
+            {
+                // If we parsed fewer parameters, we can always make a definitive claim about how many parameters were received.
+                throw new ArgumentException($"The call to '{methodIdentifier}' expects '{parameterTypes.Length}' parameters, but received '{index}'.");
+            }
+
+            if (!reader.Read() || reader.TokenType != JsonTokenType.EndArray)
+            {
+                // Either we received more parameters than we expected or the JSON is malformed.
+                throw new JsonException($"Unexpected JSON token {reader.TokenType}. Ensure that the call to `{methodIdentifier}' is supplied with exactly '{parameterTypes.Length}' parameters.");
+            }
+
+            return suppliedArgs;
+
+            // Note that the JsonReader instance is intentionally not passed by ref (or an in parameter) since we want a copy of the original reader.
+            static bool IsIncorrectDotNetObjectRefUse(Type parameterType, Utf8JsonReader jsonReader)
+            {
+                // Check for incorrect use of DotNetObjectRef<T> at the top level. We know it's
+                // an incorrect use if there's a object that looks like { '__dotNetObject': <some number> },
+                // but we aren't assigning to DotNetObjectRef{T}.
+                if (jsonReader.Read() &&
+                    jsonReader.TokenType == JsonTokenType.PropertyName &&
+                    jsonReader.ValueTextEquals(DotNetObjectRefKey.EncodedUtf8Bytes))
+                {
+                    // The JSON payload has the shape we expect from a DotNetObjectRef instance.
+                    return !parameterType.IsGenericType || parameterType.GetGenericTypeDefinition() != typeof(DotNetObjectReference<>);
+                }
+
+                return false;
             }
         }
 
@@ -310,22 +286,11 @@ namespace Microsoft.JSInterop.Infrastructure
             }
         }
 
-        /// <summary>
-        /// Accepts the byte array data being transferred from JS to DotNet.
-        /// </summary>
-        /// <param name="jsRuntime">The <see cref="JSRuntime"/>.</param>
-        /// <param name="id">Identifier for the byte array being transfered.</param>
-        /// <param name="data">Byte array to be transfered from JS.</param>
-        public static void ReceiveByteArray(JSRuntime jsRuntime, int id, byte[] data)
-        {
-            jsRuntime.ReceiveByteArray(id, data);
-        }
-
         private static (MethodInfo, Type[]) GetCachedMethodInfo(AssemblyKey assemblyKey, string methodIdentifier)
         {
             if (string.IsNullOrWhiteSpace(assemblyKey.AssemblyName))
             {
-                throw new ArgumentException($"Property '{nameof(AssemblyKey.AssemblyName)}' cannot be null, empty, or whitespace.", nameof(assemblyKey));
+                throw new ArgumentException("Cannot be null, empty, or whitespace.", nameof(assemblyKey.AssemblyName));
             }
 
             if (string.IsNullOrWhiteSpace(methodIdentifier))
@@ -360,16 +325,14 @@ namespace Microsoft.JSInterop.Infrastructure
             static Dictionary<string, (MethodInfo, Type[])> ScanTypeForCallableMethods(Type type)
             {
                 var result = new Dictionary<string, (MethodInfo, Type[])>(StringComparer.Ordinal);
+                var invokableMethods = type
+                    .GetMethods(BindingFlags.Public | BindingFlags.Instance)
+                    .Where(method => !method.ContainsGenericParameters && method.IsDefined(typeof(JSInvokableAttribute), inherit: false));
 
-                foreach (var method in type.GetMethods(BindingFlags.Instance | BindingFlags.Public))
+                foreach (var method in invokableMethods)
                 {
-                    if (method.ContainsGenericParameters || !method.IsDefined(typeof(JSInvokableAttribute), inherit: false))
-                    {
-                        continue;
-                    }
-
                     var identifier = method.GetCustomAttribute<JSInvokableAttribute>(false)!.Identifier ?? method.Name!;
-                    var parameterTypes = GetParameterTypes(method);
+                    var parameterTypes = method.GetParameters().Select(p => p.ParameterType).ToArray();
 
                     if (result.ContainsKey(identifier))
                     {
@@ -393,49 +356,27 @@ namespace Microsoft.JSInterop.Infrastructure
             // TODO: Consider looking first for assembly-level attributes (i.e., if there are any,
             // only use those) to avoid scanning, especially for framework assemblies.
             var result = new Dictionary<string, (MethodInfo, Type[])>(StringComparer.Ordinal);
-            var exportedTypes = GetRequiredLoadedAssembly(assemblyKey).GetExportedTypes();
-            foreach (var type in exportedTypes)
+            var invokableMethods = GetRequiredLoadedAssembly(assemblyKey)
+                .GetExportedTypes()
+                .SelectMany(type => type.GetMethods(BindingFlags.Public | BindingFlags.Static))
+                .Where(method => !method.ContainsGenericParameters && method.IsDefined(typeof(JSInvokableAttribute), inherit: false));
+            foreach (var method in invokableMethods)
             {
-                foreach (var method in type.GetMethods(BindingFlags.Public | BindingFlags.Static))
+                var identifier = method.GetCustomAttribute<JSInvokableAttribute>(false)!.Identifier ?? method.Name;
+                var parameterTypes = method.GetParameters().Select(p => p.ParameterType).ToArray();
+
+                if (result.ContainsKey(identifier))
                 {
-                    if (method.ContainsGenericParameters || !method.IsDefined(typeof(JSInvokableAttribute), inherit: false))
-                    {
-                        continue;
-                    }
-
-                    var identifier = method.GetCustomAttribute<JSInvokableAttribute>(false)!.Identifier ?? method.Name;
-                    var parameterTypes = GetParameterTypes(method);
-
-                    if (result.ContainsKey(identifier))
-                    {
-                        throw new InvalidOperationException($"The assembly '{assemblyKey.AssemblyName}' contains more than one " +
-                            $"[JSInvokable] method with identifier '{identifier}'. All [JSInvokable] methods within the same " +
-                            $"assembly must have different identifiers. You can pass a custom identifier as a parameter to " +
-                            $"the [JSInvokable] attribute.");
-                    }
-
-                    result.Add(identifier, (method, parameterTypes));
+                    throw new InvalidOperationException($"The assembly '{assemblyKey.AssemblyName}' contains more than one " +
+                        $"[JSInvokable] method with identifier '{identifier}'. All [JSInvokable] methods within the same " +
+                        $"assembly must have different identifiers. You can pass a custom identifier as a parameter to " +
+                        $"the [JSInvokable] attribute.");
                 }
+
+                result.Add(identifier, (method, parameterTypes));
             }
 
             return result;
-        }
-
-        private static Type[] GetParameterTypes(MethodInfo method)
-        {
-            var parameters = method.GetParameters();
-            if (parameters.Length == 0)
-            {
-                return Type.EmptyTypes;
-            }
-
-            var parameterTypes = new Type[parameters.Length];
-            for (var i = 0; i < parameters.Length; i++)
-            {
-                parameterTypes[i] = parameters[i].ParameterType;
-            }
-
-            return parameterTypes;
         }
 
         private static Assembly GetRequiredLoadedAssembly(AssemblyKey assemblyKey)
@@ -460,12 +401,6 @@ namespace Microsoft.JSInterop.Infrastructure
 
             return assembly
                 ?? throw new ArgumentException($"There is no loaded assembly with the name '{assemblyKey.AssemblyName}'.");
-        }
-
-        private static void ClearCache(Type[]? _)
-        {
-            _cachedMethodsByAssembly.Clear();
-            _cachedMethodsByType.Clear();
         }
 
         private readonly struct AssemblyKey : IEquatable<AssemblyKey>

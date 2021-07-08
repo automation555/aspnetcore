@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.IO;
@@ -47,7 +47,7 @@ namespace Microsoft.AspNetCore.TestHost
             _requestPipe = new Pipe();
 
             var responsePipe = new Pipe();
-            _responseReaderStream = new ResponseBodyReaderStream(responsePipe, ClientInitiatedAbort, ResponseBodyReadComplete);
+            _responseReaderStream = new ResponseBodyReaderStream(responsePipe, ClientInitiatedAbort, () => _responseReadCompleteCallback?.Invoke(_httpContext));
             _responsePipeWriter = new ResponseBodyPipeWriter(responsePipe, ReturnResponseMessageAsync);
             _responseFeature.Body = new ResponseBodyWriterStream(_responsePipeWriter, () => AllowSynchronousIO);
             _responseFeature.BodyWriter = _responsePipeWriter;
@@ -57,7 +57,6 @@ namespace Microsoft.AspNetCore.TestHost
             _httpContext.Features.Set<IHttpResponseBodyFeature>(_responseFeature);
             _httpContext.Features.Set<IHttpRequestLifetimeFeature>(_requestLifetimeFeature);
             _httpContext.Features.Set<IHttpResponseTrailersFeature>(_responseTrailersFeature);
-            _httpContext.Features.Set<IHttpUpgradeFeature>(new UpgradeFeature());
         }
 
         public bool AllowSynchronousIO { get; set; }
@@ -151,7 +150,7 @@ namespace Microsoft.AspNetCore.TestHost
             // Async offload, don't let the test code block the caller.
             if (_preserveExecutionContext)
             {
-                _ = Task.Factory.StartNew(RunRequestAsync, default, TaskCreationOptions.DenyChildAttach, TaskScheduler.Default);
+                _ = Task.Factory.StartNew(RunRequestAsync);
             }
             else
             {
@@ -179,11 +178,6 @@ namespace Microsoft.AspNetCore.TestHost
             // Cancel any pending request async activity when the client aborts a duplex
             // streaming scenario by disposing the HttpResponseMessage.
             CancelRequestBody();
-        }
-
-        private void ResponseBodyReadComplete()
-        {
-            _responseReadCompleteCallback?.Invoke(_httpContext);
         }
 
         private bool RequestBodyReadInProgress()

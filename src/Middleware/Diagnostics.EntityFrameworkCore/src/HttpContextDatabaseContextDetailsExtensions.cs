@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Linq;
@@ -55,7 +55,7 @@ namespace Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore
 
             if (snapshotModel != null)
             {
-                snapshotModel = context.GetService<IModelRuntimeInitializer>().Initialize(snapshotModel);
+                snapshotModel = context.GetService<IModelRuntimeInitializer>().Initialize(snapshotModel, validationLogger: null);
             }
 
             // HasDifferences will return true if there is no model snapshot, but if there is an existing database
@@ -66,9 +66,7 @@ namespace Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore
                 type: dbcontextType,
                 databaseExists: databaseExists,
                 pendingModelChanges: (!databaseExists || migrationsAssembly.ModelSnapshot != null)
-                    && modelDiffer.HasDifferences(
-                        snapshotModel?.GetRelationalModel(),
-                        context.GetService<IDesignTimeModel>().Model.GetRelationalModel()),
+                    && modelDiffer.HasDifferences(snapshotModel?.GetRelationalModel(), context.Model.GetRelationalModel()),
                 pendingMigrations: databaseExists
                     ? await context.Database.GetPendingMigrationsAsync()
                     : context.Database.GetMigrations());

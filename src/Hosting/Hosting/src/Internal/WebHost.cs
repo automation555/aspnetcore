@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Collections.Generic;
@@ -25,7 +25,7 @@ namespace Microsoft.AspNetCore.Hosting
 {
     internal class WebHost : IWebHost, IAsyncDisposable
     {
-        private const string DeprecatedServerUrlsKey = "server.urls";
+        private static readonly string DeprecatedServerUrlsKey = "server.urls";
 
         private readonly IServiceCollection _applicationServiceCollection;
         private IStartup? _startup;
@@ -155,9 +155,8 @@ namespace Microsoft.AspNetCore.Hosting
             await _hostedServiceExecutor.StartAsync(cancellationToken).ConfigureAwait(false);
 
             var diagnosticSource = _applicationServices.GetRequiredService<DiagnosticListener>();
-            var activitySource = _applicationServices.GetRequiredService<ActivitySource>();
             var httpContextFactory = _applicationServices.GetRequiredService<IHttpContextFactory>();
-            var hostingApp = new HostingApplication(application, _logger, diagnosticSource, activitySource, httpContextFactory);
+            var hostingApp = new HostingApplication(application, _logger, diagnosticSource, httpContextFactory);
             await Server.StartAsync(hostingApp, cancellationToken).ConfigureAwait(false);
             _startedServer = true;
 
@@ -356,7 +355,7 @@ namespace Microsoft.AspNetCore.Hosting
             await DisposeServiceProviderAsync(_hostingServiceProvider).ConfigureAwait(false);
         }
 
-        private static async ValueTask DisposeServiceProviderAsync(IServiceProvider? serviceProvider)
+        private async ValueTask DisposeServiceProviderAsync(IServiceProvider? serviceProvider)
         {
             switch (serviceProvider)
             {
