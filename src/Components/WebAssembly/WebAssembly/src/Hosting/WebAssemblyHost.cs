@@ -4,8 +4,7 @@
 using System;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Components.HotReload;
-using Microsoft.AspNetCore.Components.Lifetime;
+using Microsoft.AspNetCore.Components.Infrastructure;
 using Microsoft.AspNetCore.Components.WebAssembly.HotReload;
 using Microsoft.AspNetCore.Components.WebAssembly.Infrastructure;
 using Microsoft.AspNetCore.Components.WebAssembly.Rendering;
@@ -21,10 +20,10 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Hosting
     /// </summary>
     public sealed class WebAssemblyHost : IAsyncDisposable
     {
-        private readonly AsyncServiceScope _scope;
+        private readonly IServiceScope _scope;
         private readonly IServiceProvider _services;
         private readonly IConfiguration _configuration;
-        private readonly RootComponentMappingCollection _rootComponents;
+        private readonly RootComponentMapping[] _rootComponents;
         private readonly string? _persistedState;
 
         // NOTE: the host is disposable because it OWNs references to disposable things.
@@ -42,9 +41,9 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Hosting
 
         internal WebAssemblyHost(
             IServiceProvider services,
-            AsyncServiceScope scope,
+            IServiceScope scope,
             IConfiguration configuration,
-            RootComponentMappingCollection rootComponents,
+            RootComponentMapping[] rootComponents,
             string? persistedState)
         {
             // To ensure JS-invoked methods don't get linked out, have a reference to their enclosing types
@@ -85,7 +84,14 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Hosting
                 await _renderer.DisposeAsync();
             }
 
-            await _scope.DisposeAsync();
+            if (_scope is IAsyncDisposable asyncDisposableScope)
+            {
+                await asyncDisposableScope.DisposeAsync();
+            }
+            else
+            {
+                _scope?.Dispose();
+            }
 
             if (_services is IAsyncDisposable asyncDisposableServices)
             {
@@ -131,16 +137,18 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Hosting
             // This is the earliest opportunity to fetch satellite assemblies for this selection.
             await cultureProvider.LoadCurrentCultureResourcesAsync();
 
-            var manager = Services.GetRequiredService<ComponentApplicationLifetime>();
+            var manager = Services.GetRequiredService<ComponentStatePersistenceManager>();
             var store = !string.IsNullOrEmpty(_persistedState) ?
                 new PrerenderComponentApplicationStore(_persistedState) :
                 new PrerenderComponentApplicationStore();
 
             await manager.RestoreStateAsync(store);
 
-            if (HotReloadFeature.IsSupported)
+            var initializeTask = InitializeHotReloadAsync();
+            if (initializeTask is not null)
             {
-                await WebAssemblyHotReload.InitializeAsync();
+                // The returned value will be "null" in a trimmed app
+                await initializeTask;
             }
 
             var tcs = new TaskCompletionSource();
@@ -150,31 +158,23 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Hosting
                 var loggerFactory = Services.GetRequiredService<ILoggerFactory>();
                 _renderer = new WebAssemblyRenderer(Services, loggerFactory);
 
-                var initializationTcs = new TaskCompletionSource();
-                WebAssemblyCallQueue.Schedule((_rootComponents, _renderer, initializationTcs), static async state =>
+                var rootComponents = _rootComponents;
+                for (var i = 0; i < rootComponents.Length; i++)
                 {
-                    var (rootComponents, renderer, initializationTcs) = state;
+                    var rootComponent = rootComponents[i];
+                    await _renderer.AddComponentAsync(rootComponent.ComponentType, rootComponent.Selector, rootComponent.Parameters);
+                }
 
-                    try
-                    {
-                foreach (var rootComponent in rootComponents)
-                        {
-                            await renderer.AddComponentAsync(rootComponent.ComponentType, rootComponent.Selector, rootComponent.Parameters);
-                        }
-
-                        initializationTcs.SetResult();
-                    }
-                    catch (Exception ex)
-                    {
-                        initializationTcs.SetException(ex);
-                    }
-                });
-
-                await initializationTcs.Task;
                 store.ExistingState.Clear();
 
                 await tcs.Task;
             }
+        }
+
+        private Task? InitializeHotReloadAsync()
+        {
+            // In Development scenarios, wait for hot reload to apply deltas before initiating rendering.
+            return WebAssemblyHotReload.InitializeAsync();
         }
     }
 }

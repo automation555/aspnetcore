@@ -9,7 +9,7 @@ using System.Text.Json;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components;
-using Microsoft.AspNetCore.Components.Lifetime;
+using Microsoft.AspNetCore.Components.Infrastructure;
 using Microsoft.AspNetCore.Components.Rendering;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.Http;
@@ -316,7 +316,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
             Assert.Equal(typeof(TestComponent).FullName, serverComponent.TypeName);
             Assert.NotEqual(Guid.Empty, serverComponent.InvocationId);
 
-            Assert.Equal("no-cache, no-store, max-age=0", viewContext.HttpContext.Response.Headers.CacheControl);
+            Assert.Equal("no-cache, no-store, max-age=0", viewContext.HttpContext.Response.Headers[HeaderNames.CacheControl]);
             Assert.DoesNotContain(viewContext.Items.Values, value => value is InvokedRenderModes);
         }
 
@@ -360,7 +360,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
             Assert.Null(epilogueMarker.Descriptor);
             Assert.Null(epilogueMarker.Type);
 
-            Assert.Equal("no-cache, no-store, max-age=0", viewContext.HttpContext.Response.Headers.CacheControl);
+            Assert.Equal("no-cache, no-store, max-age=0", viewContext.HttpContext.Response.Headers[HeaderNames.CacheControl]);
             var (_, mode) = Assert.Single(viewContext.Items, (kvp) => kvp.Value is InvokedRenderModes);
             Assert.Equal(InvokedRenderModes.Mode.Server, ((InvokedRenderModes)mode).Value);
         }
@@ -796,7 +796,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
 
             // Assert
             Assert.Equal(302, ctx.Response.StatusCode);
-            Assert.Equal("http://localhost/redirect", ctx.Response.Headers.Location);
+            Assert.Equal("http://localhost/redirect", ctx.Response.Headers[HeaderNames.Location]);
         }
 
         [Fact]
@@ -881,9 +881,9 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
             services.AddSingleton<IJSRuntime, UnsupportedJavaScriptRuntime>();
             services.AddSingleton<NavigationManager, HttpNavigationManager>();
             services.AddSingleton<ILoggerFactory, NullLoggerFactory>();
-            services.AddSingleton<ILogger<ComponentApplicationLifetime>, NullLogger<ComponentApplicationLifetime>>();
-            services.AddSingleton<ComponentApplicationLifetime>();
-            services.AddSingleton(sp => sp.GetRequiredService<ComponentApplicationLifetime>().State);
+            services.AddSingleton<ILogger<ComponentStatePersistenceManager>, NullLogger<ComponentStatePersistenceManager>>();
+            services.AddSingleton<ComponentStatePersistenceManager>();
+            services.AddSingleton(sp => sp.GetRequiredService<ComponentStatePersistenceManager>().State);
             return services;
         }
 
