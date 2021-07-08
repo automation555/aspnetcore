@@ -3,7 +3,6 @@ import { ReconnectDisplay } from './ReconnectDisplay';
 import { DefaultReconnectDisplay } from './DefaultReconnectDisplay';
 import { UserSpecifiedDisplay } from './UserSpecifiedDisplay';
 import { Logger, LogLevel } from '../Logging/Logger';
-import { Blazor } from '../../GlobalExports';
 
 export class DefaultReconnectionHandler implements ReconnectionHandler {
   private readonly _logger: Logger;
@@ -14,7 +13,7 @@ export class DefaultReconnectionHandler implements ReconnectionHandler {
   constructor(logger: Logger, overrideDisplay?: ReconnectDisplay, reconnectCallback?: () => Promise<boolean>) {
     this._logger = logger;
     this._reconnectionDisplay = overrideDisplay;
-    this._reconnectCallback = reconnectCallback || (() => (Blazor.reconnect as any)());
+    this._reconnectCallback = reconnectCallback || (() => window['Blazor'].reconnect());
   }
 
   onConnectionDown (options: ReconnectionOptions, error?: Error) {
@@ -36,11 +35,15 @@ export class DefaultReconnectionHandler implements ReconnectionHandler {
       this._currentReconnectionProcess = null;
     }
   }
+
+  onConnectionRejected(options: ReconnectionOptions) {
+    if (options.reloadOnCircuitRejected) {
+      location.reload();
+    }
+  }
 };
 
 class ReconnectionProcess {
-  static readonly MaximumFirstRetryInterval = 3000;
-
   readonly reconnectDisplay: ReconnectDisplay;
   isDisposed = false;
 
@@ -58,12 +61,6 @@ class ReconnectionProcess {
   async attemptPeriodicReconnection(options: ReconnectionOptions) {
     for (let i = 0; i < options.maxRetries; i++) {
       this.reconnectDisplay.update(i + 1);
-
-      const delayDuration = i == 0 && options.retryIntervalMilliseconds > ReconnectionProcess.MaximumFirstRetryInterval
-                            ? ReconnectionProcess.MaximumFirstRetryInterval
-                            : options.retryIntervalMilliseconds;
-      await this.delay(delayDuration);
-
       if (this.isDisposed) {
         break;
       }
@@ -76,7 +73,7 @@ class ReconnectionProcess {
         const result = await this.reconnectCallback();
         if (!result) {
           // If the server responded and refused to reconnect, stop auto-retrying.
-          this.reconnectDisplay.rejected();
+          this.reconnectDisplay.rejected();       
           return;
         }
         return;
@@ -84,6 +81,7 @@ class ReconnectionProcess {
         // We got an exception so will try again momentarily
         this.logger.log(LogLevel.Error, err);
       }
+      await this.delay(options.retryIntervalMilliseconds);
     }
 
     this.reconnectDisplay.failed();
