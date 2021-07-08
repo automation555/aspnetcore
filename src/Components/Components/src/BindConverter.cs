@@ -7,8 +7,6 @@ using System.ComponentModel;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Reflection;
-using System.Text;
-using System.Text.Json;
 
 namespace Microsoft.AspNetCore.Components
 {
@@ -525,7 +523,7 @@ namespace Microsoft.AspNetCore.Components
             return ConvertToStringCore(obj, culture, out value);
         }
 
-        internal static readonly BindParser<string?> ConvertToString = ConvertToStringCore;
+        internal readonly static BindParser<string?> ConvertToString = ConvertToStringCore;
 
         private static bool ConvertToStringCore(object? obj, CultureInfo? culture, out string? value)
         {
@@ -558,8 +556,8 @@ namespace Microsoft.AspNetCore.Components
             return ConvertToNullableBoolCore(obj, culture, out value);
         }
 
-        internal static readonly BindParser<bool> ConvertToBool = ConvertToBoolCore;
-        internal static readonly BindParser<bool?> ConvertToNullableBool = ConvertToNullableBoolCore;
+        internal readonly static BindParser<bool> ConvertToBool = ConvertToBoolCore;
+        internal readonly static BindParser<bool?> ConvertToNullableBool = ConvertToNullableBoolCore;
 
         private static bool ConvertToBoolCore(object? obj, CultureInfo? culture, out bool value)
         {
@@ -1215,6 +1213,47 @@ namespace Microsoft.AspNetCore.Components
             return false;
         }
 
+        internal readonly static BindParser<Guid> ConvertToGuid = ConvertToGuidCore;
+        internal readonly static BindParser<Guid?> ConvertToNullableGuid = ConvertToNullableGuidCore;
+
+        private static bool ConvertToGuidCore(object? obj, CultureInfo? culture, out Guid value)
+        {
+            var text = (string?)obj;
+            if (string.IsNullOrEmpty(text))
+            {
+                value = default;
+                return false;
+            }
+
+            if (!Guid.TryParse(text, out var converted))
+            {
+                value = default;
+                return false;
+            }
+
+            value = converted;
+            return true;
+        }
+
+        private static bool ConvertToNullableGuidCore(object? obj, CultureInfo? culture, out Guid? value)
+        {
+            var text = (string?)obj;
+            if (string.IsNullOrEmpty(text))
+            {
+                value = default;
+                return false;
+            }
+
+            if (!Guid.TryParse(text, out var converted))
+            {
+                value = default;
+                return false;
+            }
+
+            value = converted;
+            return true;
+        }
+
         private static bool ConvertToEnum<T>(object? obj, CultureInfo? culture, out T value) where T : struct, Enum
         {
             var text = (string?)obj;
@@ -1280,18 +1319,8 @@ namespace Microsoft.AspNetCore.Components
 
         private static class FormatterDelegateCache
         {
-            private static readonly ConcurrentDictionary<Type, Delegate> _cache = new ConcurrentDictionary<Type, Delegate>();
+            private readonly static ConcurrentDictionary<Type, Delegate> _cache = new ConcurrentDictionary<Type, Delegate>();
 
-            private static MethodInfo? _makeArrayFormatter;
-
-            [UnconditionalSuppressMessage(
-                "ReflectionAnalysis",
-                "IL2060:MakeGenericMethod",
-                Justification = "The referenced methods don't have any DynamicallyAccessedMembers annotations. See https://github.com/mono/linker/issues/1727")]
-            [UnconditionalSuppressMessage(
-                "ReflectionAnalysis",
-                "IL2075:MakeGenericMethod",
-                Justification = "The referenced methods don't have any DynamicallyAccessedMembers annotations. See https://github.com/mono/linker/issues/1727")]
             public static BindFormatter<T> Get<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] T>()
             {
                 if (!_cache.TryGetValue(typeof(T), out var formatter))
@@ -1378,12 +1407,6 @@ namespace Microsoft.AspNetCore.Components
                     {
                         formatter = (BindFormatter<T>)FormatEnumValueCore<T>;
                     }
-                    else if (typeof(T).IsArray)
-                    {
-                        var method = _makeArrayFormatter ??= typeof(FormatterDelegateCache).GetMethod(nameof(MakeArrayFormatter), BindingFlags.NonPublic | BindingFlags.Static)!;
-                        var elementType = typeof(T).GetElementType()!;
-                        formatter = (Delegate)method.MakeGenericMethod(elementType).Invoke(null, null)!;
-                    }
                     else
                     {
                         formatter = MakeTypeConverterFormatter<T>();
@@ -1393,36 +1416,6 @@ namespace Microsoft.AspNetCore.Components
                 }
 
                 return (BindFormatter<T>)formatter;
-            }
-
-            private static BindFormatter<T[]> MakeArrayFormatter<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] T>()
-            {
-                var elementFormatter = Get<T>();
-
-                return FormatArrayValue;
-
-                string? FormatArrayValue(T[] value, CultureInfo? culture)
-                {
-                    if (value.Length == 0)
-                    {
-                        return "[]";
-                    }
-
-                    var builder = new StringBuilder("[\"");
-                    builder.Append(JsonEncodedText.Encode(elementFormatter(value[0], culture)?.ToString() ?? string.Empty));
-                    builder.Append('\"');
-
-                    for (var i = 1; i < value.Length; i++)
-                    {
-                        builder.Append(", \"");
-                        builder.Append(JsonEncodedText.Encode(elementFormatter(value[i], culture)?.ToString() ?? string.Empty));
-                        builder.Append('\"');
-                    }
-
-                    builder.Append(']');
-
-                    return builder.ToString();
-                }
             }
 
             private static BindFormatter<T> MakeTypeConverterFormatter<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] T>()
@@ -1448,19 +1441,14 @@ namespace Microsoft.AspNetCore.Components
 
         internal static class ParserDelegateCache
         {
-            private static readonly ConcurrentDictionary<Type, Delegate> _cache = new ConcurrentDictionary<Type, Delegate>();
+            private readonly static ConcurrentDictionary<Type, Delegate> _cache = new ConcurrentDictionary<Type, Delegate>();
 
             private static MethodInfo? _convertToEnum;
             private static MethodInfo? _convertToNullableEnum;
-            private static MethodInfo? _makeArrayTypeConverter;
 
             [UnconditionalSuppressMessage(
                 "ReflectionAnalysis",
                 "IL2060:MakeGenericMethod",
-                Justification = "The referenced methods don't have any DynamicallyAccessedMembers annotations. See https://github.com/mono/linker/issues/1727")]
-            [UnconditionalSuppressMessage(
-                "ReflectionAnalysis",
-                "IL2075:MakeGenericMethod",
                 Justification = "The referenced methods don't have any DynamicallyAccessedMembers annotations. See https://github.com/mono/linker/issues/1727")]
             public static BindParser<T> Get<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] T>()
             {
@@ -1544,6 +1532,14 @@ namespace Microsoft.AspNetCore.Components
                     {
                         parser = ConvertToNullableDateTime;
                     }
+                    else if (typeof(T) == typeof(Guid))
+                    {
+                        parser = ConvertToGuid;
+                    }
+                    else if (typeof(T) == typeof(Guid?))
+                    {
+                        parser = ConvertToNullableGuid;
+                    }
                     else if (typeof(T).IsEnum)
                     {
                         // We have to deal invoke this dynamically to work around the type constraint on Enum.TryParse.
@@ -1556,12 +1552,6 @@ namespace Microsoft.AspNetCore.Components
                         var method = _convertToNullableEnum ??= typeof(BindConverter).GetMethod(nameof(ConvertToNullableEnum), BindingFlags.NonPublic | BindingFlags.Static)!;
                         parser = method.MakeGenericMethod(innerType).CreateDelegate(typeof(BindParser<T>), target: null);
                     }
-                    else if (typeof(T).IsArray)
-                    {
-                        var method = _makeArrayTypeConverter ??= typeof(ParserDelegateCache).GetMethod(nameof(MakeArrayTypeConverter), BindingFlags.NonPublic | BindingFlags.Static)!;
-                        var elementType = typeof(T).GetElementType()!;
-                        parser = (Delegate)method.MakeGenericMethod(elementType).Invoke(null, null)!;
-                    }
                     else
                     {
                         parser = MakeTypeConverterConverter<T>();
@@ -1571,36 +1561,6 @@ namespace Microsoft.AspNetCore.Components
                 }
 
                 return (BindParser<T>)parser;
-            }
-
-            private static BindParser<T[]?> MakeArrayTypeConverter<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] T>()
-            {
-                var elementParser = Get<T>();
-
-                return ConvertToArray;
-
-                bool ConvertToArray(object? obj, CultureInfo? culture, out T[]? value)
-                {
-                    if (obj is not Array initialArray)
-                    {
-                        value = default;
-                        return false;
-                    }
-
-                    var convertedArray = new T[initialArray.Length];
-
-                    for (var i = 0; i < initialArray.Length; i++)
-                    {
-                        if (!elementParser(initialArray.GetValue(i), culture, out convertedArray[i]!))
-                        {
-                            value = default;
-                            return false;
-                        }
-                    }
-
-                    value = convertedArray;
-                    return true;
-                }
             }
 
             private static BindParser<T> MakeTypeConverterConverter<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] T>()
