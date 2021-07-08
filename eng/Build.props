@@ -21,35 +21,27 @@
                       $(RepoRoot)src\Tools\dotnet-watch\test\TestProjects\**\*.csproj;
                       $(RepoRoot)src\Tools\Tests.Common\TestProjects\**\*.csproj;
                       $(RepoRoot)src\Razor\Razor.Design\test\testassets\**\*.*proj;
-                      $(RepoRoot)src\Razor\test\testassets\**\*.*proj;
-                      $(RepoRoot)src\Components\Web.JS\node_modules\**\*.*proj;
-                      $(RepoRoot)src\Components\WebAssembly\Sdk\testassets\**\*.csproj;
-                      " />
-
-    <!-- These projects are not meant to be built in this repo. In the Installers case, must explicitly opt in. -->
-    <ProjectToExclude Include="
                       $(RepoRoot)src\submodules\**\*.*proj;
                       $(RepoRoot)src\Installers\**\*.*proj;
                       $(RepoRoot)src\SignalR\clients\ts\**\node_modules\**\*.*proj;
-                      $(RepoRoot)src\ProjectTemplates\Web.ProjectTemplates\content\**\*.*proj;
+                      $(RepoRoot)src\Components\Web.JS\node_modules\**\*.*proj;
+                      $(RepoRoot)src\Components\WebAssembly\Build\testassets\**\*.csproj;
+                      $(RepoRoot)src\ProjectTemplates\Web.ProjectTemplates\content\**\*.csproj;
+                      $(RepoRoot)src\ProjectTemplates\Web.ProjectTemplates\content\**\*.fsproj;
                       $(RepoRoot)src\ProjectTemplates\Web.Spa.ProjectTemplates\content\**\*.csproj;
                       " />
 
     <!-- Exclude the benchmarks because they use <PackageReference>. -->
     <ProjectToExclude Include="
                       $(RepoRoot)src\Components\benchmarkapps\BlazingPizza.Server\**\*.csproj;
-                      $(RepoRoot)src\Mvc\perf\**\*.csproj;
+                      $(RepoRoot)src\Mvc\benchmarkapps\**\*.csproj;
                       $(RepoRoot)src\Servers\Kestrel\perf\PlatformBenchmarks\**\*.csproj;
                       $(RepoRoot)src\SignalR\perf\benchmarkapps\**\*.csproj;
                       " />
-
-    <!-- Skipping due to build unreliability with current SDK et cetera. -->
-    <ProjectToExclude Include="
-                      $(RepoRoot)src/Components/test/E2ETestMigration/Microsoft.AspNetCore.Components.Migration.E2ETests.csproj" />
   </ItemGroup>
 
   <Choose>
-    <!-- Project selection can be overridden on the command line by passing in -projects. -->
+    <!-- Project selection can be overridden on the command line by passing in -projects -->
     <When Condition="'$(ProjectToBuild)' != ''">
       <ItemGroup>
         <ProjectToBuild Include="$(ProjectToBuild)" Exclude="@(ProjectToExclude);$(RepoRoot)**\bin\**\*;$(RepoRoot)**\obj\**\*">
@@ -58,43 +50,28 @@
       </ItemGroup>
     </When>
     <Otherwise>
-      <ItemGroup Condition=" '$(BuildInstallers)' == 'true' AND '$(TargetOsName)' == 'win' AND ('$(TargetArchitecture)' == 'x86' OR '$(TargetArchitecture)' == 'x64')  ">
+      <ItemGroup Condition=" '$(BuildInstallers)' == 'true' AND '$(TargetOsName)' == 'win' ">
         <!-- Build the ANCM custom action -->
-        <ProjectToBuild Include="$(RepoRoot)src\Installers\Windows\AspNetCoreModule-Setup\CustomAction\aspnetcoreCA.vcxproj" AdditionalProperties="Platform=x64" />
-        <ProjectToBuild Include="$(RepoRoot)src\Installers\Windows\AspNetCoreModule-Setup\CustomAction\aspnetcoreCA.vcxproj" AdditionalProperties="Platform=Win32" />
+        <ProjectToBuild Include="$(RepoRoot)src\Installers\Windows\AspNetCoreModule-Setup\CustomAction\aspnetcoreCA.vcxproj" AdditionalProperties="Platform=$(TargetArchitecture)" />
 
         <!-- Build the ANCM msis -->
-        <ProjectToBuild Include="$(RepoRoot)src\Installers\Windows\AspNetCoreModule-Setup\ANCMIISExpressV2\AncmIISExpressV2.wixproj" AdditionalProperties="Platform=x64" />
-        <ProjectToBuild Include="$(RepoRoot)src\Installers\Windows\AspNetCoreModule-Setup\ANCMIISExpressV2\AncmIISExpressV2.wixproj" AdditionalProperties="Platform=x86" />
-        <ProjectToBuild Include="$(RepoRoot)src\Installers\Windows\AspNetCoreModule-Setup\ANCMV2\ANCMV2.wixproj" AdditionalProperties="Platform=x64" />
-        <ProjectToBuild Include="$(RepoRoot)src\Installers\Windows\AspNetCoreModule-Setup\ANCMV2\ANCMV2.wixproj" AdditionalProperties="Platform=x86" />
+        <ProjectToBuild Include="$(RepoRoot)src\Installers\Windows\AspNetCoreModule-Setup\ANCMIISExpressV2\AncmIISExpressV2.wixproj" AdditionalProperties="Platform=$(TargetArchitecture)" />
+        <ProjectToBuild Include="$(RepoRoot)src\Installers\Windows\AspNetCoreModule-Setup\ANCMV2\ANCMV2.wixproj" AdditionalProperties="Platform=$(TargetArchitecture)" />
 
         <!-- Build the targeting pack installers -->
-        <ProjectToBuild Include="$(RepoRoot)src\Installers\Windows\TargetingPack\TargetingPack.wixproj" AdditionalProperties="Platform=x64" />
-        <ProjectToBuild Include="$(RepoRoot)src\Installers\Windows\TargetingPack\TargetingPack.wixproj" AdditionalProperties="Platform=x86" />
-        <!-- This really shouldn't be here, but instead of harvesting from the intermediate/output directories, the targetting pack installer logic
-        harvests from a zip of the reference assemblies. Producing it in each leg ends up with multiple targeting packs
-        getting produced and the BAR will reject the build. Centralize building the targeting pack in the x86/x64 leg. -->
-        <ProjectToBuild Include="$(RepoRoot)src\Installers\Windows\TargetingPack\TargetingPack.wixproj" AdditionalProperties="Platform=arm64" />
+        <ProjectToBuild Include="$(RepoRoot)src\Installers\Windows\TargetingPack\TargetingPack.wixproj" AdditionalProperties="Platform=$(TargetArchitecture)" />
 
+        <!-- Build the SharedFramework wixlib -->
+        <ProjectToBuild Include="$(RepoRoot)src\Installers\Windows\SharedFrameworkLib\SharedFrameworkLib.wixproj" AdditionalProperties="Platform=$(TargetArchitecture)" />
+      </ItemGroup>
+
+      <ItemGroup Condition=" '$(BuildBundles)' == 'true' AND '$(TargetOsName)' == 'win' ">
         <!-- Build the SharedFramework installers -->
         <ProjectToBuild Include="$(RepoRoot)src\Installers\Windows\SharedFrameworkBundle\SharedFrameworkBundle.wixproj" AdditionalProperties="Platform=x64" />
         <ProjectToBuild Include="$(RepoRoot)src\Installers\Windows\SharedFrameworkBundle\SharedFrameworkBundle.wixproj" AdditionalProperties="Platform=x86" />
 
-        <!-- Build the SharedFramework wixlib -->
-        <ProjectToBuild Include="$(RepoRoot)src\Installers\Windows\SharedFrameworkLib\SharedFrameworkLib.wixproj" AdditionalProperties="Platform=x64" />
-        <ProjectToBuild Include="$(RepoRoot)src\Installers\Windows\SharedFrameworkLib\SharedFrameworkLib.wixproj" AdditionalProperties="Platform=x86" />
-
         <!-- Windows hosting bundled -->
-        <ProjectToBuild Include="$(RepoRoot)src\Installers\Windows\WindowsHostingBundle\WindowsHostingBundle.wixproj" AdditionalProperties="Platform=x86" />
-      </ItemGroup>
-
-      <ItemGroup Condition=" '$(BuildInstallers)' == 'true' AND '$(TargetOsName)' == 'win' AND '$(TargetArchitecture)' == 'arm64' ">
-        <!-- We don't build the targeting pack installer here because it's built in the x86/x64 leg.
-        Instead we only provide the ARM64 SharedFramework MSI-->
-
-        <!-- Build the SharedFramework wixlib -->
-        <ProjectToBuild Include="$(RepoRoot)src\Installers\Windows\SharedFrameworkLib\SharedFrameworkLib.wixproj" AdditionalProperties="Platform=arm64" />
+        <ProjectToBuild Include="$(RepoRoot)src\Installers\Windows\WindowsHostingBundle\WindowsHostingBundle.wixproj" AdditionalProperties="Platform=x86" /> 
       </ItemGroup>
 
       <ItemGroup Condition="'$(BuildInstallers)' == 'true' AND '$(TargetRuntimeIdentifier)' == 'linux-x64'">
@@ -125,14 +102,6 @@
         <ProjectToBuild Condition=" '$(BuildNodeJS)' == 'true'" Include="@(NodeJsProjects)" Exclude="@(ProjectToExclude)" />
         <ProjectToExclude Condition=" '$(BuildNodeJS)' != 'true'" Include="@(NodeJsProjects)" />
 
-        <YarnMSBuildProjects Include="
-                          $(RepoRoot)src\Components\test\E2ETest\Microsoft.AspNetCore.Components.E2ETests.csproj;
-                          $(RepoRoot)src\Components\WebAssembly\Authentication.Msal\src\Microsoft.Authentication.WebAssembly.Msal.csproj;
-                          $(RepoRoot)src\Components\WebAssembly\WebAssembly.Authentication\src\Microsoft.AspNetCore.Components.WebAssembly.Authentication.csproj;
-                          "
-                        Exclude="@(ProjectToExclude)" />
-        <ProjectToExclude Condition=" '$(DotNetBuildFromSource)' == 'true'" Include="@(YarnMSBuildProjects)" />
-
         <JavaProjects Include="$(RepoRoot)src\SignalR\**\*.javaproj"
                       Exclude="@(ProjectToExclude)" />
 
@@ -155,15 +124,13 @@
                           $(RepoRoot)src\Framework\App.Runtime\src\Microsoft.AspNetCore.App.Runtime.csproj;
                           $(RepoRoot)src\Framework\App.Ref.Internal\src\Microsoft.AspNetCore.App.Ref.Internal.csproj;
                           $(RepoRoot)src\Framework\test\Microsoft.AspNetCore.App.UnitTests.csproj;
-                          $(RepoRoot)src\Caching\**\*.*proj;
                           $(RepoRoot)src\DefaultBuilder\**\*.*proj;
                           $(RepoRoot)src\Features\JsonPatch\**\*.*proj;
                           $(RepoRoot)src\DataProtection\**\*.*proj;
                           $(RepoRoot)src\Antiforgery\**\*.*proj;
                           $(RepoRoot)src\Hosting\**\*.*proj;
                           $(RepoRoot)src\Http\**\*.*proj;
-                          $(RepoRoot)src\HttpClientFactory\**\*.*proj;
-                          $(RepoRoot)src\Html.Abstractions\*.*proj;
+                          $(RepoRoot)src\Html\**\*.*proj;
                           $(RepoRoot)src\Identity\**\*.*proj;
                           $(RepoRoot)src\Servers\**\*.csproj;
                           $(RepoRoot)src\Security\**\*.*proj;
@@ -176,6 +143,7 @@
                           $(RepoRoot)src\Razor\**\*.*proj;
                           $(RepoRoot)src\Mvc\**\*.*proj;
                           $(RepoRoot)src\Azure\**\*.*proj;
+                          $(RepoRoot)src\MusicStore\**\*.*proj;
                           $(RepoRoot)src\SignalR\**\*.csproj;
                           $(RepoRoot)src\Components\**\*.csproj;
                           $(RepoRoot)src\Analyzers\**\*.csproj;
@@ -193,20 +161,19 @@
                         Exclude="
                           @(ProjectToBuild);
                           @(ProjectToExclude);
+                          $(RepoRoot)src\Razor\test\testassets\**\*.*proj;
                           $(RepoRoot)**\node_modules\**\*;
                           $(RepoRoot)**\bin\**\*;
                           $(RepoRoot)**\obj\**\*;"
                         Condition=" '$(BuildMainlyReferenceProviders)' != 'true' " />
         <DotNetProjects Include="
-                          $(RepoRoot)src\Caching\**\src\*.csproj;
                           $(RepoRoot)src\DefaultBuilder\**\src\*.csproj;
                           $(RepoRoot)src\Features\JsonPatch\**\src\*.csproj;
                           $(RepoRoot)src\DataProtection\**\src\*.csproj;
                           $(RepoRoot)src\Antiforgery\**\src\*.csproj;
                           $(RepoRoot)src\Hosting\**\src\*.csproj;
                           $(RepoRoot)src\Http\**\src\*.csproj;
-                          $(RepoRoot)src\HttpClientFactory\**\src\*.csproj;
-                          $(RepoRoot)src\Html.Abstractions\src\*.csproj;
+                          $(RepoRoot)src\Html\**\src\*.csproj;
                           $(RepoRoot)src\Identity\**\src\*.csproj;
                           $(RepoRoot)src\Servers\**\src\*.csproj;
                           $(RepoRoot)src\Security\**\src\*.csproj;
@@ -231,6 +198,7 @@
                         Exclude="
                           @(ProjectToBuild);
                           @(ProjectToExclude);
+                          $(RepoRoot)src\Razor\test\testassets\**\*.*proj;
                           $(RepoRoot)**\node_modules\**\*;
                           $(RepoRoot)**\bin\**\*;
                           $(RepoRoot)**\obj\**\*;"
