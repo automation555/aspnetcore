@@ -5,7 +5,6 @@
 
 using System;
 using System.Collections.Generic;
-using Microsoft.AspNetCore.Components.HotReload;
 using Microsoft.AspNetCore.Components.Rendering;
 
 namespace Microsoft.AspNetCore.Components.RenderTree
@@ -542,7 +541,7 @@ namespace Microsoft.AspNetCore.Components.RenderTree
             var oldParameters = new ParameterView(ParameterViewLifetime.Unbound, oldTree, oldComponentIndex);
             var newParametersLifetime = new ParameterViewLifetime(diffContext.BatchBuilder);
             var newParameters = new ParameterView(newParametersLifetime, newTree, newComponentIndex);
-            if (!newParameters.DefinitelyEquals(oldParameters) || (HotReloadFeature.IsSupported && diffContext.Renderer.IsHotReloading))
+            if (!newParameters.DefinitelyEquals(oldParameters) || diffContext.Renderer.IsHotReloading)
             {
                 componentState.SetDirectParameters(newParameters);
             }
@@ -719,9 +718,9 @@ namespace Microsoft.AspNetCore.Components.RenderTree
             ref var oldFrame = ref oldTree[oldFrameIndex];
             ref var newFrame = ref newTree[newFrameIndex];
 
-            // Using Equals to account for string comparisons, nulls, etc.
-            var valueChanged = !Equals(oldFrame.AttributeValueField, newFrame.AttributeValueField);
-            if (valueChanged)
+            var isEquivalent = AttributeComparerForDiffing.IsEquivalentForDiffing(oldFrame.AttributeValueField, newFrame.AttributeValueField);
+
+            if (!isEquivalent)
             {
                 InitializeNewAttributeFrame(ref diffContext, ref newFrame);
                 var referenceFrameIndex = diffContext.ReferenceFrames.Append(newFrame);
@@ -743,6 +742,7 @@ namespace Microsoft.AspNetCore.Components.RenderTree
                 newFrame = oldFrame;
             }
         }
+
 
         private static void InsertNewFrame(ref DiffContext diffContext, int newFrameIndex)
         {
