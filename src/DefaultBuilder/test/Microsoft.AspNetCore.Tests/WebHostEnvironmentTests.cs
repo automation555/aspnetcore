@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.IO;
 using System.Collections.Generic;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -35,7 +36,8 @@ namespace Microsoft.AspNetCore.Tests
             Assert.Equal(WebHostDefaults.ApplicationKey, env.ApplicationName);
             Assert.Equal(WebHostDefaults.EnvironmentKey, env.EnvironmentName);
             Assert.Equal(WebHostDefaults.ContentRootKey, env.ContentRootPath);
-            Assert.Equal(WebHostDefaults.WebRootKey, env.WebRootPath);
+            var fullWebRootPath = Path.Combine(env.ContentRootPath, env.WebRootPath);
+            Assert.Equal(fullWebRootPath, env.WebRootPath);
         }
 
         [Fact]
@@ -59,15 +61,16 @@ namespace Microsoft.AspNetCore.Tests
             Assert.Equal(WebHostDefaults.ApplicationKey, settings[WebHostDefaults.ApplicationKey]);
             Assert.Equal(WebHostDefaults.EnvironmentKey, settings[WebHostDefaults.EnvironmentKey]);
             Assert.Equal(WebHostDefaults.ContentRootKey, settings[WebHostDefaults.ContentRootKey]);
-            Assert.Equal(WebHostDefaults.WebRootKey, settings[WebHostDefaults.WebRootKey]);
+            var fullWebRootPath = Path.Combine(settings[WebHostDefaults.ContentRootKey], settings[WebHostDefaults.WebRootKey]);
+            Assert.Equal(fullWebRootPath, settings[WebHostDefaults.WebRootKey]);
 
             Assert.Equal(WebHostDefaults.ApplicationKey, webHostBuilderEnvironment.ApplicationName);
             Assert.Equal(WebHostDefaults.EnvironmentKey, webHostBuilderEnvironment.EnvironmentName);
             Assert.Equal(WebHostDefaults.ContentRootKey, webHostBuilderEnvironment.ContentRootPath);
-            Assert.Equal(WebHostDefaults.WebRootKey, webHostBuilderEnvironment.WebRootPath);
+            Assert.Equal(fullWebRootPath, webHostBuilderEnvironment.WebRootPath);
 
-            Assert.Same(originalEnvironment.ContentRootFileProvider, webHostBuilderEnvironment.ContentRootFileProvider);
-            Assert.Same(originalEnvironment.WebRootFileProvider, webHostBuilderEnvironment.WebRootFileProvider);
+            Assert.NotEqual(originalEnvironment.ContentRootFileProvider, webHostBuilderEnvironment.ContentRootFileProvider);
+            Assert.NotEqual(originalEnvironment.WebRootFileProvider, webHostBuilderEnvironment.WebRootFileProvider);
         }
 
         private class TestWebHostBuilder : IWebHostBuilder
