@@ -34,7 +34,7 @@ namespace Microsoft.AspNetCore.SignalR.Client
     /// Before hub methods can be invoked the connection must be started using <see cref="StartAsync"/>.
     /// Clean up a connection using <see cref="StopAsync"/> or <see cref="DisposeAsync"/>.
     /// </remarks>
-    public partial class HubConnection : IAsyncDisposable
+    public partial class HubConnection : IHubConnection, IAsyncDisposable
     {
         /// <summary>
         /// The default timeout which specifies how long to wait for a message before closing the connection. Default is 30 seconds.
@@ -457,7 +457,7 @@ namespace Microsoft.AspNetCore.SignalR.Client
             Log.Started(_logger);
         }
 
-        private static ValueTask CloseAsync(ConnectionContext connection)
+        private ValueTask CloseAsync(ConnectionContext connection)
         {
             return connection.DisposeAsync();
         }
@@ -1544,7 +1544,7 @@ namespace Microsoft.AspNetCore.SignalR.Client
             }
         }
 
-        private static IDisposable? CreateLinkedToken(CancellationToken token1, CancellationToken token2, out CancellationToken linkedToken)
+        private IDisposable? CreateLinkedToken(CancellationToken token1, CancellationToken token2, out CancellationToken linkedToken)
         {
             if (!token1.CanBeCanceled)
             {
