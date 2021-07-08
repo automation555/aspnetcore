@@ -6,7 +6,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.CompilerServices;
-using System.Security.Claims;
 using System.Threading;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Metadata;
@@ -122,6 +121,8 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
             AddSupportedRequestFormats(apiDescription.SupportedRequestFormats, hasJsonBody, routeEndpoint.Metadata);
             AddSupportedResponseTypes(apiDescription.SupportedResponseTypes, methodInfo.ReturnType, routeEndpoint.Metadata);
 
+            AddActionDescriptorEndpointMetadata(apiDescription.ActionDescriptor, routeEndpoint.Metadata);
+
             return apiDescription;
         }
 
@@ -169,9 +170,6 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
             }
             else if (parameter.CustomAttributes.Any(a => typeof(IFromServiceMetadata).IsAssignableFrom(a.AttributeType)) ||
                      parameter.ParameterType == typeof(HttpContext) ||
-                     parameter.ParameterType == typeof(HttpRequest) ||
-                     parameter.ParameterType == typeof(HttpResponse) ||
-                     parameter.ParameterType == typeof(ClaimsPrincipal) ||
                      parameter.ParameterType == typeof(CancellationToken) ||
                      _serviceProviderIsService?.IsService(parameter.ParameterType) == true)
             {
@@ -336,6 +334,31 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
                 {
                     MediaType = contentType,
                 });
+            }
+        }
+
+        private static void AddActionDescriptorEndpointMetadata(
+            ActionDescriptor actionDescriptor,
+            EndpointMetadataCollection endpointMetadata)
+        {
+            if (endpointMetadata.Count > 0)
+            {
+                // ActionDescriptor.EndpointMetadata is an empty array by
+                // default so need to add the metadata into a new list.
+                var metadata = new List<object>(endpointMetadata.Count);
+
+                foreach (var item in endpointMetadata)
+                {
+                    if (item is not null)
+                    {
+                        metadata.Add(item);
+                    }
+                }
+
+                if (metadata.Count > 0)
+                {
+                    actionDescriptor.EndpointMetadata = metadata;
+                }
             }
         }
 

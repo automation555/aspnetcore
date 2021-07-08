@@ -3,8 +3,8 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Reflection;
-using System.Security.Claims;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
@@ -254,9 +254,6 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
             Assert.Empty(GetApiDescription((IInferredServiceInterface foo) => { }).ParameterDescriptions);
             Assert.Empty(GetApiDescription(([FromServices] int foo) => { }).ParameterDescriptions);
             Assert.Empty(GetApiDescription((HttpContext context) => { }).ParameterDescriptions);
-            Assert.Empty(GetApiDescription((HttpRequest request) => { }).ParameterDescriptions);
-            Assert.Empty(GetApiDescription((HttpResponse response) => { }).ParameterDescriptions);
-            Assert.Empty(GetApiDescription((ClaimsPrincipal user) => { }).ParameterDescriptions);
             Assert.Empty(GetApiDescription((CancellationToken token) => { }).ParameterDescriptions);
         }
 
@@ -312,6 +309,21 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
             var apiDescription = GetApiDescription(() => "foo", displayName: "FOO");
 
             Assert.Equal("FOO", apiDescription.ActionDescriptor.DisplayName);
+        }
+
+        [Fact]
+        public void AddsMetadataFromRouteEndpoint()
+        {
+            var apiDescription = GetApiDescription([ApiExplorerSettings(IgnoreApi = true)]() => { });
+
+            Assert.NotEmpty(apiDescription.ActionDescriptor.EndpointMetadata);
+
+            var apiExplorerSettings = apiDescription.ActionDescriptor.EndpointMetadata
+                .OfType<ApiExplorerSettingsAttribute>()
+                .FirstOrDefault();
+
+            Assert.NotNull(apiExplorerSettings);
+            Assert.True(apiExplorerSettings.IgnoreApi);
         }
 
         private IList<ApiDescription> GetApiDescriptions(
@@ -371,7 +383,7 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
         {
             public bool IsService(Type serviceType) => serviceType == typeof(IInferredServiceInterface);
         }
- 
+
         private class HostEnvironment : IHostEnvironment
         {
             public string EnvironmentName { get; set; }
