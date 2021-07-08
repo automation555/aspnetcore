@@ -1,10 +1,12 @@
+// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
-using Microsoft.Extensions.Hosting;
 
 // Note that this sample will not run. It is only here to illustrate usage patterns.
 
@@ -12,7 +14,7 @@ namespace SampleStartups
 {
     public class StartupExternallyControlled : StartupBase
     {
-        private IHost _host;
+        private IWebHost _host;
         private readonly List<string> _urls = new List<string>();
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -30,15 +32,10 @@ namespace SampleStartups
 
         public void Start()
         {
-            _host = new HostBuilder()
-                .ConfigureWebHost(webHostBuilder =>
-                {
-                    webHostBuilder
-                        .UseKestrel()
-                        .UseStartup<StartupExternallyControlled>()
-                        .UseUrls(_urls.ToArray());
-                })
-                .Start();
+            _host = new WebHostBuilder()
+                .UseKestrel()
+                .UseStartup<StartupExternallyControlled>()
+                .Start(_urls.ToArray());
         }
 
         public async Task StopAsync()

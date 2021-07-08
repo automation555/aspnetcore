@@ -1,11 +1,12 @@
+// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using Microsoft.AspNetCore.Components.WebAssembly.Services;
-using System.Globalization;
 
 namespace TestServer
 {
@@ -24,16 +25,11 @@ namespace TestServer
             services.AddMvc();
             services.AddServerSideBlazor();
             services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme).AddCookie();
-            services.AddScoped<LazyAssemblyLoader>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
-            var enUs = new CultureInfo("en-US");
-            CultureInfo.DefaultThreadCurrentCulture = enUs;
-            CultureInfo.DefaultThreadCurrentUICulture = enUs;
-
             if (env.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();

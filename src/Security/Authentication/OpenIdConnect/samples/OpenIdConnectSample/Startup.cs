@@ -1,3 +1,6 @@
+// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -89,6 +92,8 @@ namespace OpenIdConnectSample
 
         public void ConfigureServices(IServiceCollection services)
         {
+            JwtSecurityTokenHandler.DefaultInboundClaimTypeMap.Clear();
+
             services.Configure<CookiePolicyOptions>(options =>
             {
                 options.MinimumSameSitePolicy = SameSiteMode.Unspecified;
@@ -110,7 +115,7 @@ namespace OpenIdConnectSample
                 o.Authority = Configuration["oidc:authority"];
                 */
                 // https://github.com/IdentityServer/IdentityServer4.Demo/blob/master/src/IdentityServer4Demo/Config.cs
-                o.ClientId = "hybrid";
+                o.ClientId = "server.hybrid";
                 o.ClientSecret = "secret"; // for code flow
                 o.Authority = "https://demo.identityserver.io/";
 
@@ -118,7 +123,6 @@ namespace OpenIdConnectSample
                 o.SaveTokens = true;
                 o.GetClaimsFromUserInfoEndpoint = true;
                 o.AccessDeniedPath = "/access-denied-from-remote";
-                o.MapInboundClaims = false;
 
                 // o.ClaimActions.MapAllExcept("aud", "iss", "iat", "nbf", "exp", "aio", "c_hash", "uti", "nonce");
 

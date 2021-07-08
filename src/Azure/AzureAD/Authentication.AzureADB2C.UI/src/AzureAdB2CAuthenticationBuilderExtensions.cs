@@ -1,5 +1,5 @@
 // Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.using Microsoft.AspNetCore.Authorization;
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
 using System.IO;
@@ -20,7 +20,6 @@ namespace Microsoft.AspNetCore.Authentication
     /// <summary>
     /// Extension methods to add Azure Active Directory B2C Authentication to your application.
     /// </summary>
-    [Obsolete("This is obsolete and will be removed in a future version. Use Microsoft.Identity.Web instead. See https://aka.ms/ms-identity-web.")]
     public static class AzureADB2CAuthenticationBuilderExtensions
     {
         /// <summary>
@@ -31,7 +30,6 @@ namespace Microsoft.AspNetCore.Authentication
         /// <see cref="AzureADB2COptions"/>.
         /// </param>
         /// <returns>The <see cref="AuthenticationBuilder"/>.</returns>
-        [Obsolete("This is obsolete and will be removed in a future version. Use AddMicrosoftWebApiAuthentication from Microsoft.Identity.Web instead. See https://aka.ms/ms-identity-web.")]
         public static AuthenticationBuilder AddAzureADB2CBearer(this AuthenticationBuilder builder, Action<AzureADB2COptions> configureOptions) =>
             builder.AddAzureADB2CBearer(
                 AzureADB2CDefaults.BearerAuthenticationScheme,
@@ -48,7 +46,6 @@ namespace Microsoft.AspNetCore.Authentication
         /// <see cref="AzureADB2COptions"/>.
         /// </param>
         /// <returns>The <see cref="AuthenticationBuilder"/>.</returns>
-        [Obsolete("This is obsolete and will be removed in a future version. Use AddMicrosoftWebApiAuthentication from Microsoft.Identity.Web instead. See https://aka.ms/ms-identity-web.")]
         public static AuthenticationBuilder AddAzureADB2CBearer(
             this AuthenticationBuilder builder,
             string scheme,
@@ -80,7 +77,6 @@ namespace Microsoft.AspNetCore.Authentication
         /// <see cref="AzureADB2COptions"/>
         /// </param>
         /// <returns>The <see cref="AuthenticationBuilder"/>.</returns>
-        [Obsolete("This is obsolete and will be removed in a future version. Use AddMicrosoftWebApiAuthentication from Microsoft.Identity.Web instead. See https://aka.ms/ms-identity-web.")]
         public static AuthenticationBuilder AddAzureADB2C(this AuthenticationBuilder builder, Action<AzureADB2COptions> configureOptions) =>
             builder.AddAzureADB2C(
                 AzureADB2CDefaults.AuthenticationScheme,
@@ -101,7 +97,6 @@ namespace Microsoft.AspNetCore.Authentication
         /// <see cref="AzureADB2COptions"/>
         /// </param>
         /// <returns>The <see cref="AuthenticationBuilder"/>.</returns>
-        [Obsolete("This is obsolete and will be removed in a future version. Use AddMicrosoftWebApiAuthentication from Microsoft.Identity.Web instead. See https://aka.ms/ms-identity-web.")]
         public static AuthenticationBuilder AddAzureADB2C(
             this AuthenticationBuilder builder,
             string scheme,

@@ -1,36 +1,27 @@
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+using System;
+using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Net;
 using System.Reflection;
 using System.Security.Cryptography.X509Certificates;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.FileProviders;
-using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 
 namespace WsFedSample
 {
     public class Program
     {
-        public static Task Main(string[] args)
+        public static void Main(string[] args)
         {
-            var host = new HostBuilder()
-                .ConfigureWebHost(webHostBuilder =>
-                {
-                    webHostBuilder
-                        .UseKestrel(options =>
-                        {
-                            options.Listen(IPAddress.Loopback, 44307, listenOptions =>
-                            {
-                                // Configure SSL
-                                var serverCertificate = LoadCertificate();
-                                listenOptions.UseHttps(serverCertificate);
-                            });
-                        })
-                        .UseContentRoot(Directory.GetCurrentDirectory())
-                        .UseIISIntegration()
-                        .UseStartup<Startup>();
-                })
+            var host = new WebHostBuilder()
                 .ConfigureLogging(factory =>
                 {
                     factory.AddConsole();
@@ -38,14 +29,26 @@ namespace WsFedSample
                     factory.AddFilter("Console", level => level >= LogLevel.Information);
                     factory.AddFilter("Debug", level => level >= LogLevel.Information);
                 })
+                .UseKestrel(options =>
+                {
+                    options.Listen(IPAddress.Loopback, 44307, listenOptions =>
+                    {
+                        // Configure SSL
+                        var serverCertificate = LoadCertificate();
+                        listenOptions.UseHttps(serverCertificate);
+                    });
+                })
+                .UseContentRoot(Directory.GetCurrentDirectory())
+                .UseIISIntegration()
+                .UseStartup<Startup>()
                 .Build();
 
-            return host.RunAsync();
+            host.Run();
         }
 
         private static X509Certificate2 LoadCertificate()
         {
-            var assembly = typeof(Startup).Assembly;
+            var assembly = typeof(Startup).GetTypeInfo().Assembly;
             var embeddedFileProvider = new EmbeddedFileProvider(assembly, "WsFedSample");
             var certificateFileInfo = embeddedFileProvider.GetFileInfo("compiler/resources/cert.pfx");
             using (var certificateStream = certificateFileInfo.CreateReadStream())

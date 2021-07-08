@@ -1,8 +1,13 @@
-﻿using Microsoft.AspNetCore.JsonPatch.Internal;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+using Microsoft.AspNetCore.JsonPatch.Internal;
 using Newtonsoft.Json.Linq;
 using Newtonsoft.Json.Serialization;
 using System;
 using System.Collections;
+using System.Collections.Generic;
+using System.Text;
 
 namespace Microsoft.AspNetCore.JsonPatch.Adapters
 {
@@ -11,8 +16,6 @@ namespace Microsoft.AspNetCore.JsonPatch.Adapters
     /// </summary>
     public class AdapterFactory : IAdapterFactory
     {
-        internal static AdapterFactory Default { get; } = new();
-
         /// <inheritdoc />
 #pragma warning disable PUB0001
         public virtual IAdapter Create(object target, IContractResolver contractResolver)

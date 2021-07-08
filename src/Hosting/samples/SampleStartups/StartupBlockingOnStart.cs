@@ -1,11 +1,12 @@
+// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
 using System;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
 
 // Note that this sample will not run. It is only here to illustrate usage patterns.
 
@@ -29,25 +30,20 @@ namespace SampleStartups
         }
 
         // Entry point for the application.
-        public static async Task Main(string[] args)
+        public static void Main(string[] args)
         {
             var config = new ConfigurationBuilder().AddCommandLine(args).Build();
 
-            var host = new HostBuilder()
-                .ConfigureWebHost(webHostBuilder =>
-                {
-                    webHostBuilder
-                        .UseConfiguration(config)
-                        .UseKestrel()
-                        .UseStartup<StartupBlockingOnStart>();
-                })
+            var host = new WebHostBuilder()
+                .UseConfiguration(config)
+                .UseKestrel()
+                .UseStartup<StartupBlockingOnStart>()
                 .Build();
 
             using (host)
             {
-                await host.StartAsync();
+                host.Start();
                 Console.ReadLine();
-                await host.StopAsync();
             }
         }
     }

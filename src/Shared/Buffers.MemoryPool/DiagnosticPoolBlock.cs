@@ -1,11 +1,9 @@
-// Copyright (c) Microsoft. All rights reserved.
-// Licensed under the MIT license. See LICENSE file in the project root for full license information.
+// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Threading;
 using System.Diagnostics;
 using System.Runtime.InteropServices;
-
-#nullable enable
 
 namespace System.Buffers
 {
@@ -216,7 +214,7 @@ namespace System.Buffers
             }
         }
 
-        public StackTrace? Leaser { get; set; }
+        public StackTrace Leaser { get; set; }
 
         public void Track()
         {

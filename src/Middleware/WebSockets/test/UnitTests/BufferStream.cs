@@ -1,4 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved. See License.txt in the project root for license information.
+// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
 using System.Collections.Concurrent;
@@ -142,7 +143,7 @@ namespace Microsoft.AspNetCore.WebSockets.Test
                     offset += actualCount;
                     count -= actualCount;
                 }
-                while (count > 0 && (_topBuffer.Count > 0 || !_bufferedData.IsEmpty));
+                while (count > 0 && (_topBuffer.Count > 0 || _bufferedData.Count > 0));
                 // Keep reading while there is more data available and we have more space to put it in.
                 return totalRead;
             }
@@ -206,7 +207,7 @@ namespace Microsoft.AspNetCore.WebSockets.Test
                     offset += actualCount;
                     count -= actualCount;
                 }
-                while (count > 0 && (_topBuffer.Count > 0 || !_bufferedData.IsEmpty));
+                while (count > 0 && (_topBuffer.Count > 0 || _bufferedData.Count > 0));
                 // Keep reading while there is more data available and we have more space to put it in.
                 return totalRead;
             }

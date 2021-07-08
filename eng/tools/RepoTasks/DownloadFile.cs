@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation and contributors. All rights reserved.
-// Licensed under the MIT license. See LICENSE file in the project root for full license information.
+// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
 using System.IO;
@@ -100,7 +100,7 @@ namespace RepoTasks
 
             Log.LogMessage(MessageImportance.High, $"Attempting download '{source}' to '{target}'");
 
-            using (var httpClient = new HttpClient { Timeout = TimeSpan.FromMinutes(5) })
+            using (var httpClient = new HttpClient())
             {
                 for (int retryNumber = 0; retryNumber < MaxRetries; retryNumber++)
                 {

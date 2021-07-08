@@ -1,10 +1,10 @@
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
 using System.Collections.Generic;
 
 namespace Microsoft.AspNetCore.Authentication.OAuth
 {
-    /// <summary>
-    /// <see cref="AuthenticationProperties"/> for an OAuth challenge.
-    /// </summary>
     public class OAuthChallengeProperties : AuthenticationProperties
     {
         /// <summary>
@@ -12,25 +12,14 @@ namespace Microsoft.AspNetCore.Authentication.OAuth
         /// </summary>
         public static readonly string ScopeKey = "scope";
 
-        /// <summary>
-        /// Initializes a new instance of <see cref="OAuthChallengeProperties"/>.
-        /// </summary>
         public OAuthChallengeProperties()
         { }
 
-        /// <summary>
-        /// Initializes a new instance of <see cref="OAuthChallengeProperties" />.
-        /// </summary>
-        /// <inheritdoc />
-        public OAuthChallengeProperties(IDictionary<string, string?> items)
+        public OAuthChallengeProperties(IDictionary<string, string> items)
             : base(items)
         { }
 
-        /// <summary>
-        /// Initializes a new instance of <see cref="OAuthChallengeProperties" />.
-        /// </summary>
-        /// <inheritdoc />
-        public OAuthChallengeProperties(IDictionary<string, string?>? items, IDictionary<string, object?>? parameters)
+        public OAuthChallengeProperties(IDictionary<string, string> items, IDictionary<string, object> parameters)
             : base(items, parameters)
         { }
 
@@ -39,7 +28,7 @@ namespace Microsoft.AspNetCore.Authentication.OAuth
         /// </summary>
         public ICollection<string> Scope
         {
-            get => GetParameter<ICollection<string>>(ScopeKey)!;
+            get => GetParameter<ICollection<string>>(ScopeKey);
             set => SetParameter(ScopeKey, value);
         }
 

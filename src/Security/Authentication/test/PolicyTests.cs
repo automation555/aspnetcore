@@ -1,4 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved. See License.txt in the project root for license information.
+// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
 using System.Security.Claims;
@@ -8,7 +9,6 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Authentication
@@ -18,7 +18,7 @@ namespace Microsoft.AspNetCore.Authentication
         [Fact]
         public async Task CanDispatch()
         {
-            using var server = await CreateServer(services =>
+            var server = CreateServer(services =>
             {
                 services.AddLogging().AddAuthentication(o =>
                 {
@@ -334,7 +334,7 @@ namespace Microsoft.AspNetCore.Authentication
         [Fact]
         public async Task CanDynamicTargetBasedOnQueryString()
         {
-            using var server = await CreateServer(services =>
+            var server = CreateServer(services =>
             {
                 services.AddAuthentication(o =>
                 {
@@ -456,44 +456,33 @@ namespace Microsoft.AspNetCore.Authentication
             }
         }
 
-        private static async Task<TestServer> CreateServer(Action<IServiceCollection> configure = null, string defaultScheme = null)
+        private static TestServer CreateServer(Action<IServiceCollection> configure = null, string defaultScheme = null)
         {
-            var host = new HostBuilder()
-                .ConfigureWebHost(webHostBuilder =>
+            var builder = new WebHostBuilder()
+                .Configure(app =>
                 {
-                    webHostBuilder
-                        .Configure(app =>
+                    app.UseAuthentication();
+                    app.Use(async (context, next) =>
+                    {
+                        var req = context.Request;
+                        var res = context.Response;
+                        if (req.Path.StartsWithSegments(new PathString("/auth"), out var remainder))
                         {
-                            app.UseAuthentication();
-                            app.Use(async (context, next) =>
-                            {
-                                var req = context.Request;
-                                var res = context.Response;
-                                if (req.Path.StartsWithSegments(new PathString("/auth"), out var remainder))
-                                {
-                                    var name = (remainder.Value.Length > 0) ? remainder.Value.Substring(1) : null;
-                                    var result = await context.AuthenticateAsync(name);
-                                    await res.DescribeAsync(result?.Ticket?.Principal);
-                                }
-                                else
-                                {
-                                    await next(context);
-                                }
-                            });
-                        })
-                        .UseTestServer();
+                            var name = (remainder.Value.Length > 0) ? remainder.Value.Substring(1) : null;
+                            var result = await context.AuthenticateAsync(name);
+                            await res.DescribeAsync(result?.Ticket?.Principal);
+                        }
+                        else
+                        {
+                            await next();
+                        }
+                    });
                 })
                 .ConfigureServices(services =>
                 {
                     configure?.Invoke(services);
-                })
-                .Build();
-
-            var server = host.GetTestServer();
-
-            await host.StartAsync();
-
-            return server;
+                });
+            return new TestServer(builder);
         }
     }
 }

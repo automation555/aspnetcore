@@ -1,11 +1,12 @@
+// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
 using System;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Server.HttpSys;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 
 namespace HotAddSample
@@ -52,7 +53,7 @@ namespace HotAddSample
                     await context.Response.WriteAsync("</body></html>");
                     return;
                 }
-                await next(context);
+                await next();
             });
 
             app.Use(async (context, next) =>
@@ -76,7 +77,7 @@ namespace HotAddSample
                     await context.Response.WriteAsync("</body></html>");
                     return;
                 }
-                await next(context);
+                await next();
             });
 
             app.Run(async context =>
@@ -98,19 +99,15 @@ namespace HotAddSample
             });
         }
 
-        public static Task Main(string[] args)
+        public static void Main(string[] args)
         {
-            var host = new HostBuilder()
-                .ConfigureWebHost(webHostBuilder =>
-                {
-                    webHostBuilder
-                        .UseStartup<Startup>()
-                        .UseHttpSys();
-                })
+            var host = new WebHostBuilder()
                 .ConfigureLogging(factory => factory.AddConsole())
+                .UseStartup<Startup>()
+                .UseHttpSys()
                 .Build();
 
-            return host.RunAsync();
+            host.Run();
         }
     }
 }

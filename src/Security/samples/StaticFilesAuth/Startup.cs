@@ -1,3 +1,6 @@
+// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -95,13 +98,13 @@ namespace StaticFilesAuth
 
             app.Map("/MapAuthenticatedFiles", branch =>
             {
-                branch.Use((context, next) => { SetFileEndpoint(context, files, null); return next(context); });
+                branch.Use((context, next) => { SetFileEndpoint(context, files, null); return next(); });
                 branch.UseAuthorization();
                 SetupFileServer(branch, files);
             });
             app.Map("/MapImperativeFiles", branch =>
             {
-                branch.Use((context, next) => { SetFileEndpoint(context, files, "files"); return next(context); });
+                branch.Use((context, next) => { SetFileEndpoint(context, files, "files"); return next(); });
                 branch.UseAuthorization();
                 SetupFileServer(branch, files);
             });

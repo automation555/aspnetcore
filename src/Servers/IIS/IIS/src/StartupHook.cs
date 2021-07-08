@@ -1,5 +1,5 @@
-// Copyright (c) Microsoft. All rights reserved.
-// Licensed under the MIT license. See LICENSE file in the project root for full license information.
+// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
 using System.Collections.Generic;
@@ -63,11 +63,31 @@ internal class StartupHook
             var iisConfigData = NativeMethods.HttpGetApplicationProperties();
             var contentRoot = iisConfigData.pwzFullApplicationPath.TrimEnd(Path.DirectorySeparatorChar);
 
-            var model = ErrorPageModelBuilder.CreateErrorPageModel(
+            var model = new ErrorPageModel
+            {
+                RuntimeDisplayName = RuntimeInformation.FrameworkDescription
+            };
+
+            var systemRuntimeAssembly = typeof(System.ComponentModel.DefaultValueAttribute).GetTypeInfo().Assembly;
+            var assemblyVersion = new AssemblyName(systemRuntimeAssembly.FullName).Version.ToString();
+            var clrVersion = assemblyVersion;
+            model.RuntimeArchitecture = RuntimeInformation.ProcessArchitecture.ToString();
+            var currentAssembly = typeof(ErrorPage).GetTypeInfo().Assembly;
+            model.CurrentAssemblyVesion = currentAssembly
+                .GetCustomAttribute<AssemblyInformationalVersionAttribute>()
+                .InformationalVersion;
+            model.ClrVersion = clrVersion;
+            model.OperatingSystemDescription = RuntimeInformation.OSDescription;
+
+            var exceptionDetailProvider = new ExceptionDetailsProvider(
                 new PhysicalFileProvider(contentRoot),
                 logger: null,
-                showDetailedErrors: true,
-                exception);
+                sourceCodeLineCount: 6);
+
+            // The startup hook is only present when detailed errors are allowed, so
+            // we can turn on all the details.
+            model.ErrorDetails = exceptionDetailProvider.GetDetails(exception);
+            model.ShowRuntimeDetails = true;
 
             var errorPage = new ErrorPage(model);
 

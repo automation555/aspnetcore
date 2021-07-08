@@ -1,5 +1,7 @@
+// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
 using System;
-using System.Globalization;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -28,22 +30,17 @@ namespace TestServer
             services.AddMvc();
 
             services.AddServerSideBlazor();
-
             services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme).AddCookie();
             services.AddAuthorization(options =>
             {
                 options.AddPolicy("NameMustStartWithB", policy =>
-                    policy.RequireAssertion(ctx => ctx.User.Identity.Name?.StartsWith('B') ?? false));
+                    policy.RequireAssertion(ctx => ctx.User.Identity.Name?.StartsWith("B") ?? false));
             });
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
-            var enUs = new CultureInfo("en-US");
-            CultureInfo.DefaultThreadCurrentCulture = enUs;
-            CultureInfo.DefaultThreadCurrentUICulture = enUs;
-
             if (env.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();
@@ -54,8 +51,8 @@ namespace TestServer
             // Mount the server-side Blazor app on /subdir
             app.Map("/subdir", app =>
             {
-                app.UseBlazorFrameworkFiles();
                 app.UseStaticFiles();
+                app.UseClientSideBlazorFiles<BasicTestApp.Program>();
 
                 app.UseRouting();
                 app.UseEndpoints(endpoints =>
@@ -72,7 +69,7 @@ namespace TestServer
     public class AuthenticationStartup : AuthenticationStartupBase
     {
         public AuthenticationStartup(IConfiguration configuration)
-            : base(configuration, (endpoints) => endpoints.MapFallbackToFile("index.html"))
+            : base(configuration, (endpoints) => endpoints.MapFallbackToClientSideBlazor<BasicTestApp.Program>("index.html"))
         {
         }
     }

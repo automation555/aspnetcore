@@ -1,3 +1,6 @@
+// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
 using System.Collections.Generic;
 using System.Linq;
 using System.Security.Claims;
@@ -19,11 +22,7 @@ namespace CookieSessionSample
             {
                 options.DefaultAuthenticateScheme = CookieAuthenticationDefaults.AuthenticationScheme;
                 options.DefaultChallengeScheme = CookieAuthenticationDefaults.AuthenticationScheme;
-            }).AddCookie();
-
-            services.AddSingleton<ITicketStore, MemoryCacheTicketStore>();
-            services.AddOptions<CookieAuthenticationOptions>(CookieAuthenticationDefaults.AuthenticationScheme)
-                .Configure<ITicketStore>((o, ticketStore) => o.SessionStore = ticketStore);
+            }).AddCookie(o => o.SessionStore = new MemoryCacheTicketStore());
         }
 
         public void Configure(IApplicationBuilder app)

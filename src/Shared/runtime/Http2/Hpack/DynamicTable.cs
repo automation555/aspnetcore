@@ -1,9 +1,9 @@
-// Licensed to the .NET Foundation under one or more agreements.
-// The .NET Foundation licenses this file to you under the MIT license.
+// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 namespace System.Net.Http.HPack
 {
-    internal sealed class DynamicTable
+    internal class DynamicTable
     {
         private HeaderField[] _buffer;
         private int _maxSize;
@@ -24,7 +24,7 @@ namespace System.Net.Http.HPack
 
         public int MaxSize => _maxSize;
 
-        public ref readonly HeaderField this[int index]
+        public HeaderField this[int index]
         {
             get
             {
@@ -41,7 +41,7 @@ namespace System.Net.Http.HPack
                     index += _buffer.Length;
                 }
 
-                return ref _buffer[index];
+                return _buffer[index];
             }
         }
 

@@ -1,12 +1,13 @@
+// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
 using System;
 using System.Diagnostics;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DiagnosticAdapter;
-using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 
 namespace MiddlewareAnaysisSample
@@ -33,7 +34,7 @@ namespace MiddlewareAnaysisSample
             app.Use((context, next) =>
             {
                 // No-op
-                return next(context);
+                return next();
             });
 
             app.Map("/map", subApp =>
@@ -74,30 +75,27 @@ namespace MiddlewareAnaysisSample
                 }
                 else
                 {
-                    await next(context);
+                    await next();
                 }
             });
 
             // Note there's always a default 404 middleware at the end of the pipeline.
         }
 
-        public static Task Main(string[] args)
+        public static void Main(string[] args)
         {
-            var host = new HostBuilder()
-                .ConfigureWebHost(webHostBuilder =>
+            var host = new WebHostBuilder()
+                .ConfigureLogging((_, factory) =>
                 {
-                    webHostBuilder
-                    .ConfigureLogging((_, factory) =>
-                    {
-                        factory.AddConsole();
-                        factory.AddFilter("Console", level => level >= LogLevel.Debug);
-                    })
-                    .UseKestrel()
-                    .UseIISIntegration()
-                    .UseStartup<Startup>();
-                }).Build();
+                    factory.AddConsole();
+                    factory.AddFilter("Console", level => level >= LogLevel.Debug);
+                })
+                .UseKestrel()
+                .UseIISIntegration()
+                .UseStartup<Startup>()
+                .Build();
 
-            return host.RunAsync();
+            host.Run();
         }
 
         public class TestDiagnosticListener

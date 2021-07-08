@@ -1,11 +1,11 @@
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
 using System.Collections.Generic;
 using Microsoft.AspNetCore.Authentication.OAuth;
 
 namespace Microsoft.AspNetCore.Authentication.Google
 {
-    /// <summary>
-    /// <see cref="AuthenticationProperties"/> for a Google OAuth challenge.
-    /// </summary>
     public class GoogleChallengeProperties : OAuthChallengeProperties
     {
         /// <summary>
@@ -33,32 +33,21 @@ namespace Microsoft.AspNetCore.Authentication.Google
         /// </summary>
         public static readonly string PromptParameterKey = "prompt";
 
-        /// <summary>
-        /// Initializes a new instance of <see cref="GoogleChallengeProperties"/>.
-        /// </summary>
         public GoogleChallengeProperties()
         { }
 
-        /// <summary>
-        /// Initializes a new instance of <see cref="GoogleChallengeProperties"/>.
-        /// </summary>
-        /// <inheritdoc />
-        public GoogleChallengeProperties(IDictionary<string, string?> items)
+        public GoogleChallengeProperties(IDictionary<string, string> items)
             : base(items)
         { }
 
-        /// <summary>
-        /// Initializes a new instance of <see cref="GoogleChallengeProperties"/>.
-        /// </summary>
-        /// <inheritdoc />
-        public GoogleChallengeProperties(IDictionary<string, string?> items, IDictionary<string, object?> parameters)
+        public GoogleChallengeProperties(IDictionary<string, string> items, IDictionary<string, object> parameters)
             : base(items, parameters)
         { }
 
         /// <summary>
         /// The "access_type" parameter value being used for a challenge request.
         /// </summary>
-        public string? AccessType
+        public string AccessType
         {
             get => GetParameter<string>(AccessTypeKey);
             set => SetParameter(AccessTypeKey, value);
@@ -67,7 +56,7 @@ namespace Microsoft.AspNetCore.Authentication.Google
         /// <summary>
         /// The "approval_prompt" parameter value being used for a challenge request.
         /// </summary>
-        public string? ApprovalPrompt
+        public string ApprovalPrompt
         {
             get => GetParameter<string>(ApprovalPromptKey);
             set => SetParameter(ApprovalPromptKey, value);
@@ -85,7 +74,7 @@ namespace Microsoft.AspNetCore.Authentication.Google
         /// <summary>
         /// The "login_hint" parameter value being used for a challenge request.
         /// </summary>
-        public string? LoginHint
+        public string LoginHint
         {
             get => GetParameter<string>(LoginHintKey);
             set => SetParameter(LoginHintKey, value);
@@ -94,7 +83,7 @@ namespace Microsoft.AspNetCore.Authentication.Google
         /// <summary>
         /// The "prompt" parameter value being used for a challenge request.
         /// </summary>
-        public string? Prompt
+        public string Prompt
         {
             get => GetParameter<string>(PromptParameterKey);
             set => SetParameter(PromptParameterKey, value);

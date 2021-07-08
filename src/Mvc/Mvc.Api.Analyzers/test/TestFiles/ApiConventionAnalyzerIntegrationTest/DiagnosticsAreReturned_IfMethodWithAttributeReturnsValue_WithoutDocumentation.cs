@@ -1,4 +1,7 @@
-﻿namespace Microsoft.AspNetCore.Mvc.Api.Analyzers
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+namespace Microsoft.AspNetCore.Mvc.Api.Analyzers
 {
     [ApiController]
     public class DiagnosticsAreReturned_IfMethodWithAttributeReturnsValue_WithoutDocumentation : ControllerBase
@@ -11,7 +14,7 @@
                 return NotFound();
             }
 
-            return /*MM*/new DiagnosticsAreReturned_IfMethodWithAttributeReturnsValue_WithoutDocumentationModel();
+            /*MM*/return new DiagnosticsAreReturned_IfMethodWithAttributeReturnsValue_WithoutDocumentationModel();
         }
     }
 

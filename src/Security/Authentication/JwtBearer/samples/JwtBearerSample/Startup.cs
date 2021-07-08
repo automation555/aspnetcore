@@ -1,3 +1,6 @@
+// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
 using System;
 using System.Buffers;
 using System.Collections.Generic;
@@ -59,7 +62,7 @@ namespace JwtBearerSample
                 var authResult = await context.AuthenticateAsync(JwtBearerDefaults.AuthenticationScheme);
                 if (authResult.Succeeded && authResult.Principal.Identity.IsAuthenticated)
                 {
-                    await next(context);
+                    await next();
                 }
                 else if (authResult.Failure != null)
                 {
@@ -92,7 +95,7 @@ namespace JwtBearerSample
                     else
                     {
                         response.ContentType = "application/json";
-                        response.Headers.CacheControl = "no-cache";
+                        response.Headers[HeaderNames.CacheControl] = "no-cache";
                         await response.StartAsync();
                         Serialize(Todos, response.BodyWriter);
                         await response.BodyWriter.FlushAsync();

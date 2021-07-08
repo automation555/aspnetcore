@@ -1,13 +1,14 @@
+// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
 using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.IO;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Hosting.Server.Abstractions;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
-using Microsoft.AspNetCore.Testing;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging.Abstractions;
 using Moq;
@@ -89,98 +90,7 @@ namespace Microsoft.AspNetCore.Hosting.Tests
             hostingApplication.DisposeContext(context, null);
         }
 
-        [Fact]
-        public void IHttpActivityFeatureIsPopulated()
-        {
-            var testSource = new ActivitySource(Path.GetRandomFileName());
-            var dummySource = new ActivitySource(Path.GetRandomFileName());
-            using var listener = new ActivityListener
-            {
-                ShouldListenTo = activitySource => (ReferenceEquals(activitySource, testSource) ||
-                                                    ReferenceEquals(activitySource, dummySource)),
-                Sample = (ref ActivityCreationOptions<ActivityContext> _) => ActivitySamplingResult.AllData
-            };
-            ActivitySource.AddActivityListener(listener);
-
-            var hostingApplication = CreateApplication(activitySource: testSource);
-            var httpContext = new DefaultHttpContext();
-            var context = hostingApplication.CreateContext(httpContext.Features);
-
-            var activityFeature = context.HttpContext.Features.Get<IHttpActivityFeature>();
-            Assert.NotNull(activityFeature);
-            Assert.NotNull(activityFeature.Activity);
-            Assert.Equal(HostingApplicationDiagnostics.ActivityName, activityFeature.Activity.DisplayName);
-            var initialActivity = Activity.Current;
-
-            // Create nested dummy Activity
-            using var _ = dummySource.StartActivity("DummyActivity");
-
-            Assert.Same(initialActivity, activityFeature.Activity);
-            Assert.NotEqual(Activity.Current, activityFeature.Activity);
-
-            // Act/Assert
-            hostingApplication.DisposeContext(context, null);
-        }
-
-        private class TestHttpActivityFeature : IHttpActivityFeature
-        {
-            public Activity Activity { get; set; }
-        }
-
-        [Fact]
-        public void IHttpActivityFeatureIsAssignedToIfItExists()
-        {
-            var testSource = new ActivitySource(Path.GetRandomFileName());
-            var dummySource = new ActivitySource(Path.GetRandomFileName());
-            using var listener = new ActivityListener
-            {
-                ShouldListenTo = activitySource => (ReferenceEquals(activitySource, testSource) ||
-                                                    ReferenceEquals(activitySource, dummySource)),
-                Sample = (ref ActivityCreationOptions<ActivityContext> _) => ActivitySamplingResult.AllData
-            };
-            ActivitySource.AddActivityListener(listener);
-
-            var hostingApplication = CreateApplication(activitySource: testSource);
-            var httpContext = new DefaultHttpContext();
-            httpContext.Features.Set<IHttpActivityFeature>(new TestHttpActivityFeature());
-            var context = hostingApplication.CreateContext(httpContext.Features);
-
-            var activityFeature = context.HttpContext.Features.Get<IHttpActivityFeature>();
-            Assert.NotNull(activityFeature);
-            Assert.IsType<TestHttpActivityFeature>(activityFeature);
-            Assert.NotNull(activityFeature.Activity);
-            Assert.Equal(HostingApplicationDiagnostics.ActivityName, activityFeature.Activity.DisplayName);
-            var initialActivity = Activity.Current;
-
-            // Create nested dummy Activity
-            using var _ = dummySource.StartActivity("DummyActivity");
-
-            Assert.Same(initialActivity, activityFeature.Activity);
-            Assert.NotEqual(Activity.Current, activityFeature.Activity);
-
-            // Act/Assert
-            hostingApplication.DisposeContext(context, null);
-        }
-
-        [Fact]
-        [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/34072")]
-        public void IHttpActivityFeatureIsNotPopulatedWithoutAListener()
-        {
-            var hostingApplication = CreateApplication();
-            var httpContext = new DefaultHttpContext();
-            httpContext.Features.Set<IHttpActivityFeature>(new TestHttpActivityFeature());
-            var context = hostingApplication.CreateContext(httpContext.Features);
-
-            var activityFeature = context.HttpContext.Features.Get<IHttpActivityFeature>();
-            Assert.NotNull(activityFeature);
-            Assert.Null(activityFeature.Activity);
-
-            // Act/Assert
-            hostingApplication.DisposeContext(context, null);
-        }
-
-        private static HostingApplication CreateApplication(IHttpContextFactory httpContextFactory = null, bool useHttpContextAccessor = false,
-            ActivitySource activitySource = null)
+        private static HostingApplication CreateApplication(IHttpContextFactory httpContextFactory = null, bool useHttpContextAccessor = false)
         {
             var services = new ServiceCollection();
             services.AddOptions();
@@ -195,7 +105,6 @@ namespace Microsoft.AspNetCore.Hosting.Tests
                 ctx => Task.CompletedTask,
                 NullLogger.Instance,
                 new DiagnosticListener("Microsoft.AspNetCore"),
-                activitySource ?? new ActivitySource("Microsoft.AspNetCore"),
                 httpContextFactory);
 
             return hostingApplication;

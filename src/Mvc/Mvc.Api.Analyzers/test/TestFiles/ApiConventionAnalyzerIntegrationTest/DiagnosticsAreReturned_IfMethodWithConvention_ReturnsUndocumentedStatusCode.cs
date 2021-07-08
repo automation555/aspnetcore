@@ -1,4 +1,7 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Api.Analyzers;
 
 [assembly: ApiConventionType(typeof(DiagnosticsAreReturned_IfMethodWithConvention_ReturnsUndocumentedStatusCodeConvention))]
@@ -12,7 +15,7 @@ namespace Microsoft.AspNetCore.Mvc.Api.Analyzers
         {
             if (id < 0)
             {
-                return /*MM*/BadRequest();
+                /*MM*/return BadRequest();
             }
 
             if (id == 0)

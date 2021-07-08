@@ -1,4 +1,7 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+using Microsoft.AspNetCore.Mvc;
 
 namespace Microsoft.AspNetCore.Mvc.Api.Analyzers
 {
@@ -16,7 +19,7 @@ namespace Microsoft.AspNetCore.Mvc.Api.Analyzers
 
             if (!ModelState.IsValid)
             {
-                return /*MM*/UnprocessableEntity();
+                /*MM*/return UnprocessableEntity();
             }
 
             return Ok();

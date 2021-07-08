@@ -1,3 +1,6 @@
+// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
 using System;
 
 namespace Microsoft.JSInterop.Infrastructure
@@ -12,9 +15,9 @@ namespace Microsoft.JSInterop.Infrastructure
         /// </summary>
         /// <param name="exception">The <see cref="System.Exception"/> that caused the failure.</param>
         /// <param name="errorKind">The error kind.</param>
-        internal DotNetInvocationResult(Exception exception, string? errorKind)
+        public DotNetInvocationResult(Exception exception, string errorKind)
         {
-            ResultJson = default;
+            Result = default;
             Exception = exception ?? throw new ArgumentNullException(nameof(exception));
             ErrorKind = errorKind;
             Success = false;
@@ -23,10 +26,10 @@ namespace Microsoft.JSInterop.Infrastructure
         /// <summary>
         /// Constructor for a successful invocation.
         /// </summary>
-        /// <param name="resultJson">The JSON representation of the result.</param>
-        internal DotNetInvocationResult(string? resultJson)
+        /// <param name="result">The result.</param>
+        public DotNetInvocationResult(object result)
         {
-            ResultJson = resultJson;
+            Result = result;
             Exception = default;
             ErrorKind = default;
             Success = true;
@@ -35,17 +38,17 @@ namespace Microsoft.JSInterop.Infrastructure
         /// <summary>
         /// Gets the <see cref="System.Exception"/> that caused the failure.
         /// </summary>
-        public Exception? Exception { get; }
+        public Exception Exception { get; }
 
         /// <summary>
         /// Gets the error kind.
         /// </summary>
-        public string? ErrorKind { get; }
+        public string ErrorKind { get; }
 
         /// <summary>
-        /// Gets a JSON representation of the result of a successful invocation.
+        /// Gets the result of a successful invocation.
         /// </summary>
-        public string? ResultJson { get; }
+        public object Result { get; }
 
         /// <summary>
         /// <see langword="true"/> if the invocation succeeded, otherwise <see langword="false"/>.

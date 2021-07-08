@@ -1,5 +1,5 @@
 // Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.using Microsoft.AspNetCore.Authorization;
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
 using Microsoft.AspNetCore.Authentication.AzureAD.UI;
@@ -484,26 +484,6 @@ namespace Microsoft.AspNetCore.Authentication
             var jwtOptions = provider.GetService<IOptionsMonitor<JwtBearerOptions>>();
 
             Assert.NotNull(jwtOptions.Get("other"));
-        }
-
-        [Fact]
-        public void AddAzureAD_SkipsOptionsValidationForNonAzureOpenIdConnect()
-        {
-            var services = new ServiceCollection();
-            services.AddSingleton<ILoggerFactory>(new NullLoggerFactory());
-
-            services.AddAuthentication()
-                .AddAzureAD(o => { })
-                .AddOpenIdConnect("other", null, o =>
-                {
-                    o.ClientId = "ClientId";
-                    o.Authority = "https://authority.com";
-                });
-
-            var provider = services.BuildServiceProvider();
-            var openIdConnectOptions = provider.GetService<IOptionsMonitor<OpenIdConnectOptions>>();
-
-            Assert.NotNull(openIdConnectOptions.Get("other"));
         }
     }
 }

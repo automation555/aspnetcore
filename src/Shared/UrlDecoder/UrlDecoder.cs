@@ -1,6 +1,5 @@
-// Licensed to the .NET Foundation under one or more agreements.
-// The .NET Foundation licenses this file to you under the MIT license.
-// See the LICENSE file in the project root for more information.
+// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
 
@@ -20,7 +19,7 @@ namespace Microsoft.AspNetCore.Internal
             if (destination.Length < source.Length)
             {
                 throw new ArgumentException(
-                    "Length of the destination byte span is less then the source.",
+                    "Lenghth of the destination byte span is less then the source.",
                     nameof(destination));
             }
 
@@ -294,7 +293,7 @@ namespace Microsoft.AspNetCore.Internal
         /// Read the next char and convert it into hexadecimal value.
         ///
         /// The <paramref name="scan"/> index will be moved to the next
-        /// byte no matter whether the operation successes.
+        /// byte no matter no matter whether the operation successes.
         /// </summary>
         /// <param name="scan">The index of the byte in the buffer to read</param>
         /// <param name="buffer">The byte span from which the hex to be read</param>

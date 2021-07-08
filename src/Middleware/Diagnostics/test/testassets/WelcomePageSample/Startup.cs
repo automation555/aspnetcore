@@ -1,7 +1,8 @@
-using System.Threading.Tasks;
+// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.Extensions.Hosting;
 
 namespace WelcomePageSample
 {
@@ -12,18 +13,15 @@ namespace WelcomePageSample
             app.UseWelcomePage();
         }
 
-        public static Task Main(string[] args)
+        public static void Main(string[] args)
         {
-            var host = new HostBuilder()
-                .ConfigureWebHost(webHostBuilder =>
-                {
-                    webHostBuilder
-                    .UseKestrel()
-                    .UseIISIntegration()
-                    .UseStartup<Startup>();
-                }).Build();
+            var host = new WebHostBuilder()
+                .UseKestrel()
+                .UseIISIntegration()
+                .UseStartup<Startup>()
+                .Build();
 
-            return host.RunAsync();
+            host.Run();
         }
     }
 }

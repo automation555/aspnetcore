@@ -1,3 +1,6 @@
+// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
 using System.Threading.Tasks;
 using IdentitySample.DefaultUI.Data;
 using Microsoft.AspNetCore.Builder;
@@ -49,8 +52,6 @@ namespace IdentitySample.DefaultUI
             services.AddDefaultIdentity<ApplicationUser>(o => o.SignIn.RequireConfirmedAccount = true)
                  .AddRoles<IdentityRole>()
                  .AddEntityFrameworkStores<ApplicationDbContext>();
-
-            services.AddDatabaseDeveloperPageExceptionFilter();
         }
 
 
@@ -60,7 +61,7 @@ namespace IdentitySample.DefaultUI
             if (env.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();
-                app.UseMigrationsEndPoint();
+                app.UseDatabaseErrorPage();
             }
             else
             {

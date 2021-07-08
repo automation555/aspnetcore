@@ -1,3 +1,6 @@
+// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -49,34 +52,30 @@ namespace HttpsSample
         }
 
         // Entry point for the application.
-        public static Task Main(string[] args)
+        public static void Main(string[] args)
         {
-            var host = new HostBuilder()
-                .ConfigureWebHost(webHostBuilder =>
+            var host = new WebHostBuilder()
+                .UseKestrel(
+                options =>
                 {
-                    webHostBuilder
-                    .UseKestrel(
-                    options =>
+                    options.Listen(new IPEndPoint(IPAddress.Loopback, 5001), listenOptions =>
                     {
-                        options.Listen(new IPEndPoint(IPAddress.Loopback, 5001), listenOptions =>
-                        {
-                            listenOptions.UseHttps("testCert.pfx", "testPassword");
-                        });
-                        options.Listen(new IPEndPoint(IPAddress.Loopback, 5000), listenOptions =>
-                        {
-                        });
-                    })
-                    .UseContentRoot(Directory.GetCurrentDirectory()) // for the cert file
-                    .ConfigureLogging(factory =>
+                        listenOptions.UseHttps("testCert.pfx", "testPassword");
+                    });
+                    options.Listen(new IPEndPoint(IPAddress.Loopback, 5000), listenOptions =>
                     {
-                        factory.SetMinimumLevel(LogLevel.Debug);
-                        factory.AddConsole();
-                    })
-                    .UseStartup<Startup>();
+                    });
                 })
+                .UseContentRoot(Directory.GetCurrentDirectory()) // for the cert file
+                .ConfigureLogging(factory =>
+                {
+                    factory.SetMinimumLevel(LogLevel.Debug);
+                    factory.AddConsole();
+                })
+                .UseStartup<Startup>()
                 .Build();
 
-            return host.RunAsync();
+            host.Run();
         }
     }
 }

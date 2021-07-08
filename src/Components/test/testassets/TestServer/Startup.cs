@@ -1,4 +1,6 @@
-using System.Globalization;
+// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
 using System.IO;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -27,10 +29,6 @@ namespace TestServer
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
-            var enUs = new CultureInfo("en-US");
-            CultureInfo.DefaultThreadCurrentCulture = enUs;
-            CultureInfo.DefaultThreadCurrentUICulture = enUs;
-
             if (env.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();

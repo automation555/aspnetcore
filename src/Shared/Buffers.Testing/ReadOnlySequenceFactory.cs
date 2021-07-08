@@ -1,8 +1,5 @@
-// Licensed to the .NET Foundation under one or more agreements.
-// The .NET Foundation licenses this file to you under the MIT license.
-// See the LICENSE file in the project root for more information.
-
-#nullable enable
+// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Collections.Generic;
 using System.Text;
@@ -92,7 +89,7 @@ namespace System.Buffers
 
             public override ReadOnlySequence<byte> CreateWithContent(byte[] data)
             {
-                var segments = new List<byte[]>((data.Length * 2) + 1);
+                var segments = new List<byte[]>();
 
                 segments.Add(Array.Empty<byte>());
                 foreach (var b in data)
@@ -114,8 +111,8 @@ namespace System.Buffers
 
             int i = 0;
 
-            BufferSegment? last = null;
-            BufferSegment? first = null;
+            BufferSegment last = null;
+            BufferSegment first = null;
 
             do
             {
@@ -139,7 +136,7 @@ namespace System.Buffers
                 }
                 else
                 {
-                    last = last!.Append(memory);
+                    last = last.Append(memory);
                 }
                 i++;
             } while (i < inputs.Length);

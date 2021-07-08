@@ -1,3 +1,6 @@
+// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
 using System;
 using System.Collections.Generic;
 using System.Net.WebSockets;
@@ -20,7 +23,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
         }
 
         private readonly SyncPoint _sync;
-        private readonly TaskCompletionSource _accepted = new TaskCompletionSource();
+        private readonly TaskCompletionSource<object> _accepted = new TaskCompletionSource<object>();
 
         public bool IsWebSocketRequest => true;
 
@@ -43,7 +46,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
             Client = clientSocket;
             SubProtocol = context.SubProtocol;
 
-            _accepted.TrySetResult();
+            _accepted.TrySetResult(null);
             return Task.FromResult<WebSocket>(serverSocket);
         }
 

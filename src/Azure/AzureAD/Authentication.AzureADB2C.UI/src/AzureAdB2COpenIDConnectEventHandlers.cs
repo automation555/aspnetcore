@@ -1,5 +1,5 @@
 // Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.using Microsoft.AspNetCore.Authorization;
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
 using System.Collections.Generic;
@@ -10,7 +10,6 @@ using Microsoft.IdentityModel.Protocols.OpenIdConnect;
 
 namespace Microsoft.AspNetCore.Authentication.AzureADB2C.UI
 {
-    [Obsolete("This is obsolete and will be removed in a future version. Use Microsoft.Identity.Web instead. See https://aka.ms/ms-identity-web.")]
     internal class AzureADB2COpenIDConnectEventHandlers
     {
         private IDictionary<string, string> _policyToIssuerAddress =
@@ -56,7 +55,7 @@ namespace Microsoft.AspNetCore.Authentication.AzureADB2C.UI
         public Task OnRemoteFailure(RemoteFailureContext context)
         {
             context.HandleResponse();
-            // Handle the error code that Azure Active Directory B2C throws when trying to reset a password from the login page
+            // Handle the error code that Azure Active Directory B2C throws when trying to reset a password from the login page 
             // because password reset is not supported by a "sign-up or sign-in policy".
             // Below is a sample error message:
             // 'access_denied', error_description: 'AADB2C90118: The user has forgotten their password.

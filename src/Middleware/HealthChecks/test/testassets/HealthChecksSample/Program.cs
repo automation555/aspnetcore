@@ -1,10 +1,11 @@
+// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 
 namespace HealthChecksSample
@@ -27,12 +28,12 @@ namespace HealthChecksSample
             };
         }
 
-        public static Task Main(string[] args)
+        public static void Main(string[] args)
         {
-            return BuildWebHost(args).RunAsync();
+            BuildWebHost(args).Run();
         }
 
-        public static IHost BuildWebHost(string[] args)
+        public static IWebHost BuildWebHost(string[] args)
         {
             var config = new ConfigurationBuilder()
                 .SetBasePath(Directory.GetCurrentDirectory())
@@ -47,20 +48,16 @@ namespace HealthChecksSample
                 startupType = typeof(BasicStartup);
             }
 
-            return new HostBuilder()
-                .ConfigureWebHost(webHostBuilder =>
+            return new WebHostBuilder()
+                .UseConfiguration(config)
+                .ConfigureLogging(builder =>
                 {
-                    webHostBuilder
-                    .UseConfiguration(config)
-                    .ConfigureLogging(builder =>
-                    {
-                        builder.SetMinimumLevel(LogLevel.Trace);
-                        builder.AddConfiguration(config);
-                        builder.AddConsole();
-                    })
-                    .UseKestrel()
-                    .UseStartup(startupType);
+                    builder.SetMinimumLevel(LogLevel.Trace);
+                    builder.AddConfiguration(config);
+                    builder.AddConsole();
                 })
+                .UseKestrel()
+                .UseStartup(startupType)
                 .Build();
         }
 

@@ -1,3 +1,6 @@
+// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
 using System.Runtime.ExceptionServices;
 
 namespace Microsoft.AspNetCore.SignalR.Protocol
@@ -26,7 +29,7 @@ namespace Microsoft.AspNetCore.SignalR.Protocol
         /// <param name="invocationId">The invocation ID.</param>
         /// <param name="target">The target method name.</param>
         /// <param name="bindingFailure">The exception thrown during binding.</param>
-        public InvocationBindingFailureMessage(string? invocationId, string target, ExceptionDispatchInfo bindingFailure) : base(invocationId)
+        public InvocationBindingFailureMessage(string invocationId, string target, ExceptionDispatchInfo bindingFailure) : base(invocationId)
         {
             Target = target;
             BindingFailure = bindingFailure;

@@ -1,4 +1,7 @@
-using System.Threading.Tasks;
+// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+using Microsoft.AspNetCore;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Hosting;
 
@@ -6,17 +9,13 @@ namespace JwtBearerSample
 {
     public static class Program
     {
-        public static Task Main(string[] args)
+        public static void Main(string[] args)
         {
-            var host = Host.CreateDefaultBuilder(args)
-                .ConfigureWebHostDefaults(webHostBuilder =>
-                {
-                    webHostBuilder
-                        .UseStartup<Startup>();
-                })
+            var host = WebHost.CreateDefaultBuilder(args)
+                .UseStartup<Startup>()
                 .Build();
 
-            return host.RunAsync();
+            host.Run();
         }
     }
 }

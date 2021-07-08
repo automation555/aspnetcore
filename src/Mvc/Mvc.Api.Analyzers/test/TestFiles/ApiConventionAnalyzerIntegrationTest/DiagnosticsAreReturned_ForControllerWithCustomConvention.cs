@@ -1,4 +1,7 @@
-﻿using System.Threading.Tasks;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Api.Analyzers;
@@ -14,7 +17,7 @@ namespace Microsoft.AspNetCore.Mvc.Api.Analyzers
         {
             if (id < 0)
             {
-                return /*MM*/BadRequest();
+                /*MM*/return BadRequest();
             }
 
             try

@@ -1,3 +1,6 @@
+// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
 using System;
 using System.Net.WebSockets;
 using System.Threading;
@@ -17,15 +20,12 @@ namespace AutobahnTestApp
             app.UseWebSockets();
 
             var logger = loggerFactory.CreateLogger<Startup>();
-            app.Run(async (context) =>
+            app.Use(async (context, next) =>
             {
                 if (context.WebSockets.IsWebSocketRequest)
                 {
                     logger.LogInformation("Received WebSocket request");
-                    using (var webSocket = await context.WebSockets.AcceptWebSocketAsync(new WebSocketAcceptContext()
-                    {
-                        DangerousEnableCompression = true
-                    }))
+                    using (var webSocket = await context.WebSockets.AcceptWebSocketAsync())
                     {
                         await Echo(webSocket, context.RequestAborted);
                     }

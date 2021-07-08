@@ -1,5 +1,5 @@
-﻿// Copyright (c) Microsoft. All rights reserved.
-// Licensed under the MIT license. See LICENSE file in the project root for full license information.
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
 using System.Buffers;
@@ -11,7 +11,7 @@ namespace Microsoft.Extensions.Internal.Test
 {
     public class DiagnosticMemoryPoolTests: MemoryPoolTests
     {
-        protected override MemoryPool<byte> CreatePool() => new DiagnosticMemoryPool(new PinnedBlockMemoryPool());
+        protected override MemoryPool<byte> CreatePool() => new DiagnosticMemoryPool(new SlabMemoryPool());
 
         [Fact]
         public void DoubleDisposeThrows()
@@ -176,7 +176,7 @@ namespace Microsoft.Extensions.Internal.Test
         [Fact]
         public async Task DoesNotThrowWithLateReturns()
         {
-            var memoryPool = new DiagnosticMemoryPool(new PinnedBlockMemoryPool(), allowLateReturn: true);
+            var memoryPool = new DiagnosticMemoryPool(new SlabMemoryPool(), allowLateReturn: true);
             var block = memoryPool.Rent();
             memoryPool.Dispose();
             block.Dispose();
@@ -186,7 +186,7 @@ namespace Microsoft.Extensions.Internal.Test
         [Fact]
         public async Task ThrowsOnAccessToLateBlocks()
         {
-            var memoryPool = new DiagnosticMemoryPool(new PinnedBlockMemoryPool(), allowLateReturn: true);
+            var memoryPool = new DiagnosticMemoryPool(new SlabMemoryPool(), allowLateReturn: true);
             var block = memoryPool.Rent();
             memoryPool.Dispose();
 
@@ -202,7 +202,7 @@ namespace Microsoft.Extensions.Internal.Test
         [Fact]
         public void ExceptionsContainStackTraceWhenEnabled()
         {
-            var memoryPool = new DiagnosticMemoryPool(new PinnedBlockMemoryPool(), rentTracking: true);
+            var memoryPool = new DiagnosticMemoryPool(new SlabMemoryPool(), rentTracking: true);
             var block = memoryPool.Rent();
 
             ExpectDisposeException(memoryPool);

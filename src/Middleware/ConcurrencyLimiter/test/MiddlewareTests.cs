@@ -1,10 +1,9 @@
 // Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Testing;
 using Xunit;
 
 namespace Microsoft.AspNetCore.ConcurrencyLimiter.Tests
@@ -42,7 +41,7 @@ namespace Microsoft.AspNetCore.ConcurrencyLimiter.Tests
                 });
 
             var context = new DefaultHttpContext();
-            await middleware.Invoke(context).DefaultTimeout();
+            await middleware.Invoke(context).OrTimeout();
             Assert.True(onRejectedInvoked);
             Assert.Equal(StatusCodes.Status503ServiceUnavailable, context.Response.StatusCode);
         }
@@ -58,7 +57,7 @@ namespace Microsoft.AspNetCore.ConcurrencyLimiter.Tests
                     throw new DivideByZeroException();
                 });
 
-            await middleware.Invoke(new DefaultHttpContext()).DefaultTimeout();
+            await middleware.Invoke(new DefaultHttpContext()).OrTimeout();
         }
 
         [Fact]
@@ -118,7 +117,7 @@ namespace Microsoft.AspNetCore.ConcurrencyLimiter.Tests
                 });
 
             Assert.Equal(0, testQueue.QueuedRequests);
-            await Assert.ThrowsAsync<DivideByZeroException>(() => middleware.Invoke(new DefaultHttpContext())).DefaultTimeout();
+            await Assert.ThrowsAsync<DivideByZeroException>(() => middleware.Invoke(new DefaultHttpContext())).OrTimeout();
 
             Assert.Equal(0, testQueue.QueuedRequests);
             Assert.True(flag);
@@ -163,7 +162,7 @@ namespace Microsoft.AspNetCore.ConcurrencyLimiter.Tests
 
             // the second request is rejected with a 503 error. During the rejection, an error occurs
             var context = new DefaultHttpContext();
-            await Assert.ThrowsAsync<DivideByZeroException>(() => middleware.Invoke(context)).DefaultTimeout();
+            await Assert.ThrowsAsync<DivideByZeroException>(() => middleware.Invoke(context)).OrTimeout();
             Assert.Equal(StatusCodes.Status503ServiceUnavailable, context.Response.StatusCode);
             Assert.Equal(1, concurrent);
             Assert.Equal(0, testQueue.QueuedRequests);

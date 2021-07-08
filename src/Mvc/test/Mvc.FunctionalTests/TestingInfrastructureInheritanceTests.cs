@@ -1,17 +1,14 @@
-// Copyright (c) .NET  Foundation. All rights reserved.
+﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.DependencyInjection;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Mvc.FunctionalTests
@@ -32,8 +29,7 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
             Assert.Equal(new[] { "ConfigureWebHost", "Customization", "FurtherCustomization" }, factory.ConfigureWebHostCalled.ToArray());
             Assert.True(factory.CreateServerCalled);
             Assert.True(factory.CreateWebHostBuilderCalled);
-            // GetTestAssemblies is not called when reading content roots from MvcAppManifest
-            Assert.False(factory.GetTestAssembliesCalled);
+            Assert.True(factory.GetTestAssembliesCalled);
             Assert.True(factory.CreateHostBuilderCalled);
             Assert.False(factory.CreateHostCalled);
         }
@@ -50,7 +46,7 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
 
             // Assert
             Assert.Equal(new[] { "ConfigureWebHost", "Customization", "FurtherCustomization" }, factory.ConfigureWebHostCalled.ToArray());
-            Assert.False(factory.GetTestAssembliesCalled);
+            Assert.True(factory.GetTestAssembliesCalled);
             Assert.True(factory.CreateHostBuilderCalled);
             Assert.True(factory.CreateHostCalled);
             Assert.False(factory.CreateServerCalled);
@@ -66,63 +62,6 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
             // Assert
             Assert.NotNull(factory.Services);
             Assert.NotNull(factory.Services.GetService(typeof(IConfiguration)));
-        }
-
-        [Fact]
-        public void TestingInfrastructure_GenericHost_HostShouldStopBeforeDispose()
-        {
-            // Act
-            using var factory = new CustomizedFactory<GenericHostWebSite.Startup>();
-            var callbackCalled = false;
-
-            var lifetimeService = (IHostApplicationLifetime) factory.Services.GetService(typeof(IHostApplicationLifetime));
-            lifetimeService.ApplicationStopped.Register(() => { callbackCalled = true; });
-            factory.Dispose();
-
-            // Assert
-            Assert.True(callbackCalled);
-        }
-
-        [Fact]
-        public async Task TestingInfrastructure_GenericHost_HostDisposeAsync()
-        {
-            // Arrange
-            using var factory = new CustomizedFactory<GenericHostWebSite.Startup>().WithWebHostBuilder(ConfigureWebHostBuilder);
-            var sink = factory.Services.GetRequiredService<DisposableService>();
-
-            // Act
-            await factory.DisposeAsync();
-
-            // Assert
-            Assert.True(sink._asyncDisposed);
-        }
-
-        [Fact]
-        public void TestingInfrastructure_GenericHost_HostDispose()
-        {
-            // Arrange
-            using var factory = new CustomizedFactory<GenericHostWebSite.Startup>().WithWebHostBuilder(ConfigureWebHostBuilder);
-            var sink = factory.Services.GetRequiredService<DisposableService>();
-
-            // Act
-            factory.Dispose();
-
-            // Assert
-            Assert.True(sink._asyncDisposed);
-        }
-
-        private static void ConfigureWebHostBuilder(IWebHostBuilder builder) =>
-            builder.UseStartup<GenericHostWebSite.Startup>()
-            .ConfigureServices(s => s.AddScoped<DisposableService>());
-
-        private class DisposableService : IAsyncDisposable
-        {
-            public bool _asyncDisposed = false;
-            public ValueTask DisposeAsync()
-            {
-                _asyncDisposed = true;
-                return ValueTask.CompletedTask;
-            }
         }
 
         private class CustomizedFactory<TEntryPoint> : WebApplicationFactory<TEntryPoint> where TEntryPoint : class

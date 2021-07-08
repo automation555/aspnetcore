@@ -1,5 +1,5 @@
-// Copyright (c) Andrew Arnott. All rights reserved.
-// Licensed under the MIT license. See LICENSE.txt file in the project root for full license information.
+// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 namespace Nerdbank.Streams
 {
@@ -84,7 +84,7 @@ namespace Nerdbank.Streams
         /// in which case the higher of the two minimums dictate the minimum array size that will be allocated.
         /// </para>
         /// </remarks>
-        public int MinimumSpanLength { get; set; }
+        public int MinimumSpanLength { get; set; } = 0;
 
         /// <summary>
         /// Gets this sequence expressed as a <see cref="ReadOnlySequence{T}"/>.
@@ -299,7 +299,7 @@ namespace Nerdbank.Streams
             /// <summary>
             /// A value indicating whether the element is a value type.
             /// </summary>
-            private static readonly bool IsValueTypeElement = typeof(T).IsValueType;
+            private static readonly bool IsValueTypeElement = typeof(T).GetTypeInfo().IsValueType;
 
             /// <summary>
             /// Gets the backing array, when using an <see cref="ArrayPool{T}"/> instead of a <see cref="MemoryPool{T}"/>.
@@ -443,7 +443,7 @@ namespace Nerdbank.Streams
                 // If we store references, clear them to allow the objects to be GC'd.
                 if (!IsValueTypeElement)
                 {
-                    this.AvailableMemory.Span.Slice(startIndex, length).Clear();
+                    this.AvailableMemory.Span.Slice(startIndex, length).Fill(default);
                 }
             }
         }

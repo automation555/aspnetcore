@@ -1,3 +1,6 @@
+// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
@@ -37,7 +40,7 @@ namespace TestServer
             app.Map("/subdir", app =>
             {
                 // Add it before to ensure it takes priority over files in wwwroot
-                app.UseBlazorFrameworkFiles();
+                app.UseClientSideBlazorFiles<BasicTestApp.Program>();
                 app.UseStaticFiles();
 
                 app.UseRouting();
@@ -45,7 +48,7 @@ namespace TestServer
                 {
                     endpoints.MapRazorPages();
                     endpoints.MapControllers();
-                    endpoints.MapFallbackToFile("index.html");
+                    endpoints.MapFallbackToClientSideBlazor<BasicTestApp.Program>("index.html");
                 });
             });
         }

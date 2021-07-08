@@ -1,3 +1,6 @@
+// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
 using System;
 
 namespace BlazorServerApp.Data
@@ -10,6 +13,6 @@ namespace BlazorServerApp.Data
 
         public int TemperatureF => 32 + (int)(TemperatureC / 0.5556);
 
-        public string Summary { get; set; } = default!;
+        public string Summary { get; set; }
     }
 }

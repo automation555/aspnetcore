@@ -1,3 +1,6 @@
+// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
 using System;
 using System.Net;
 using System.Security.Cryptography.X509Certificates;
@@ -27,7 +30,8 @@ namespace Http3SampleApp
                     webHost.UseKestrel()
                     .UseQuic(options =>
                     {
-                        options.Alpn = "h3-29"; // Shouldn't need to populate this as well.
+                        options.Certificate = cert; // Shouldn't need this either here.
+                        options.Alpn = "h3-25"; // Shouldn't need to populate this as well.
                         options.IdleTimeout = TimeSpan.FromHours(1);
                     })
                     .ConfigureKestrel((context, options) =>
@@ -41,8 +45,7 @@ namespace Http3SampleApp
                             {
                                 httpsOptions.ServerCertificate = cert;
                             });
-                            listenOptions.UseConnectionLogging();
-                            listenOptions.Protocols = HttpProtocols.Http3;
+                            listenOptions.Protocols = HttpProtocols.Http1AndHttp2AndHttp3;
                         });
                     })
                     .UseStartup<Startup>();

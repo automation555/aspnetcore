@@ -1,81 +1,79 @@
+// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
 using System;
 using System.IO;
 using System.Net;
-using System.Threading.Tasks;
+using System.Runtime.Loader;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 
 namespace AutobahnTestApp
 {
     public class Program
     {
-        public static Task Main(string[] args)
+        public static void Main(string[] args)
         {
             var scenarioName = "Unknown";
             var config = new ConfigurationBuilder()
                 .AddCommandLine(args)
                 .Build();
 
-            var builder = new HostBuilder()
-                .ConfigureWebHost(webHostBuilder =>
+            var builder = new WebHostBuilder()
+                .ConfigureLogging(loggingBuilder => loggingBuilder.AddConsole())
+                .UseConfiguration(config)
+                .UseContentRoot(Directory.GetCurrentDirectory())
+                .UseIISIntegration()
+                .UseStartup<Startup>();
+
+            if (string.Equals(builder.GetSetting("server"), "Microsoft.AspNetCore.Server.HttpSys", System.StringComparison.Ordinal))
+            {
+                scenarioName = "HttpSysServer";
+                Console.WriteLine("Using HttpSys server");
+                builder.UseHttpSys();
+            }
+            else if (!string.IsNullOrEmpty(Environment.GetEnvironmentVariable("ASPNETCORE_PORT")))
+            {
+                // ANCM is hosting the process.
+                // The port will not yet be configured at this point, but will also not require HTTPS.
+                scenarioName = "AspNetCoreModule";
+                Console.WriteLine("Detected ANCM, using Kestrel");
+                builder.UseKestrel();
+            }
+            else
+            {
+                // Also check "server.urls" for back-compat.
+                var urls = builder.GetSetting(WebHostDefaults.ServerUrlsKey) ?? builder.GetSetting("server.urls");
+                builder.UseSetting(WebHostDefaults.ServerUrlsKey, string.Empty);
+
+                Console.WriteLine($"Using Kestrel, URL: {urls}");
+
+                if (urls.Contains(";"))
                 {
-                    webHostBuilder
-                    .ConfigureLogging(loggingBuilder => loggingBuilder.AddConsole())
-                    .UseConfiguration(config)
-                    .UseContentRoot(Directory.GetCurrentDirectory())
-                    .UseIISIntegration()
-                    .UseStartup<Startup>();
+                    throw new NotSupportedException("This test app does not support multiple endpoints.");
+                }
 
-                    if (string.Equals(webHostBuilder.GetSetting("server"), "Microsoft.AspNetCore.Server.HttpSys", System.StringComparison.Ordinal))
-                    {
-                        scenarioName = "HttpSysServer";
-                        Console.WriteLine("Using HttpSys server");
-                        webHostBuilder.UseHttpSys();
-                    }
-                    else if (!string.IsNullOrEmpty(Environment.GetEnvironmentVariable("ASPNETCORE_PORT")))
-                    {
-                        // ANCM is hosting the process.
-                        // The port will not yet be configured at this point, but will also not require HTTPS.
-                        scenarioName = "AspNetCoreModule";
-                        Console.WriteLine("Detected ANCM, using Kestrel");
-                        webHostBuilder.UseKestrel();
-                    }
-                    else
-                    {
-                        // Also check "server.urls" for back-compat.
-                        var urls = webHostBuilder.GetSetting(WebHostDefaults.ServerUrlsKey) ?? webHostBuilder.GetSetting("server.urls");
-                        webHostBuilder.UseSetting(WebHostDefaults.ServerUrlsKey, string.Empty);
+                var uri = new Uri(urls);
 
-                        Console.WriteLine($"Using Kestrel, URL: {urls}");
-
-                        if (urls.Contains(";"))
+                builder.UseKestrel(options =>
+                {
+                    options.Listen(IPAddress.Loopback, uri.Port, listenOptions =>
+                    {
+                        if (uri.Scheme.Equals("https", StringComparison.OrdinalIgnoreCase))
                         {
-                            throw new NotSupportedException("This test app does not support multiple endpoints.");
+                            scenarioName = "Kestrel(SSL)";
+                            var certPath = Path.Combine(AppContext.BaseDirectory, "TestResources", "testCert.pfx");
+                            Console.WriteLine($"Using SSL with certificate: {certPath}");
+                            listenOptions.UseHttps(certPath, "testPassword");
                         }
-
-                        var uri = new Uri(urls);
-
-                        webHostBuilder.UseKestrel(options =>
+                        else
                         {
-                            options.Listen(IPAddress.Loopback, uri.Port, listenOptions =>
-                            {
-                                if (uri.Scheme.Equals("https", StringComparison.OrdinalIgnoreCase))
-                                {
-                                    scenarioName = "Kestrel(SSL)";
-                                    var certPath = Path.Combine(AppContext.BaseDirectory, "TestResources", "testCert.pfx");
-                                    Console.WriteLine($"Using SSL with certificate: {certPath}");
-                                    listenOptions.UseHttps(certPath, "testPassword");
-                                }
-                                else
-                                {
-                                    scenarioName = "Kestrel(NonSSL)";
-                                }
-                            });
-                        });
-                    }
+                            scenarioName = "Kestrel(NonSSL)";
+                        }
+                    });
                 });
+            }
 
             var host = builder.Build();
 
@@ -85,7 +83,7 @@ namespace AutobahnTestApp
             };
 
             Console.WriteLine($"Starting Server for Scenario: {scenarioName}");
-            return host.RunAsync();
+            host.Run();
         }
     }
 }

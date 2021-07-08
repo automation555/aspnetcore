@@ -1,7 +1,7 @@
-using System;
-using System.Globalization;
+// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
 using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -23,20 +23,11 @@ namespace TestServer
         {
             services.AddMvc();
             services.AddServerSideBlazor();
-            services.AddSingleton<ResourceRequestLog>();
-
-            // Since tests run in parallel, we use an ephemeral key provider to avoid filesystem
-            // contention issues.
-            services.AddSingleton<IDataProtectionProvider, EphemeralDataProtectionProvider>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
-        public void Configure(IApplicationBuilder app, IWebHostEnvironment env, ResourceRequestLog resourceRequestLog)
+        public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
-            var enUs = new CultureInfo("en-US");
-            CultureInfo.DefaultThreadCurrentCulture = enUs;
-            CultureInfo.DefaultThreadCurrentUICulture = enUs;
-
             if (env.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();
@@ -45,23 +36,12 @@ namespace TestServer
             // Mount the server-side Blazor app on /subdir
             app.Map("/subdir", app =>
             {
-                app.Use((context, next) =>
-                {
-                    if (context.Request.Path.Value.EndsWith("/images/blazor_logo_1000x.png", StringComparison.Ordinal))
-                    {
-                        resourceRequestLog.AddRequest(context.Request);
-                    }
-
-                    return next(context);
-                });
-
                 app.UseStaticFiles();
 
                 app.UseRouting();
                 app.UseEndpoints(endpoints =>
                 {
                     endpoints.MapBlazorHub();
-                    endpoints.MapControllerRoute("mvc", "{controller}/{action}");
                     endpoints.MapFallbackToPage("/_ServerHost");
                 });
             });

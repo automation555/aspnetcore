@@ -1,3 +1,6 @@
+// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
 using System;
 using System.Threading;
 using System.Threading.Tasks;
@@ -10,24 +13,22 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
     internal class KestrelConnection<T> : KestrelConnection, IThreadPoolWorkItem where T : BaseConnectionContext
     {
         private readonly Func<T, Task> _connectionDelegate;
-        private readonly T _transportConnection;
+
+        public T TransportConnection { get; set; }
 
         public KestrelConnection(long id,
                                  ServiceContext serviceContext,
-                                 TransportConnectionManager transportConnectionManager,
                                  Func<T, Task> connectionDelegate,
                                  T connectionContext,
                                  IKestrelTrace logger)
-            : base(id, serviceContext, transportConnectionManager, logger)
+            : base(id, serviceContext, logger)
         {
             _connectionDelegate = connectionDelegate;
-            _transportConnection = connectionContext;
+            TransportConnection = connectionContext;
             connectionContext.Features.Set<IConnectionHeartbeatFeature>(this);
             connectionContext.Features.Set<IConnectionCompleteFeature>(this);
             connectionContext.Features.Set<IConnectionLifetimeNotificationFeature>(this);
         }
-
-        public override BaseConnectionContext TransportConnection => _transportConnection;
 
         void IThreadPoolWorkItem.Execute()
         {
@@ -36,12 +37,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
 
         internal async Task ExecuteAsync()
         {
-            var connectionContext = _transportConnection;
+            var connectionContext = TransportConnection;
 
             try
             {
-                KestrelEventSource.Log.ConnectionQueuedStop(connectionContext);
-
                 Logger.ConnectionStart(connectionContext.ConnectionId);
                 KestrelEventSource.Log.ConnectionStart(connectionContext);
 
@@ -67,10 +66,15 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
                 // Dispose the transport connection, this needs to happen before removing it from the
                 // connection manager so that we only signal completion of this connection after the transport
                 // is properly torn down.
-                await connectionContext.DisposeAsync();
+                await TransportConnection.DisposeAsync();
 
-                _transportConnectionManager.RemoveConnection(_id);
+                _serviceContext.ConnectionManager.RemoveConnection(_id);
             }
+        }
+
+        public override BaseConnectionContext GetTransport()
+        {
+            return TransportConnection;
         }
     }
 }

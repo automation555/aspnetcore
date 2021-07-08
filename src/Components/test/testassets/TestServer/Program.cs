@@ -1,3 +1,6 @@
+// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
@@ -9,13 +12,13 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Testing;
-using DevServerProgram = Microsoft.AspNetCore.Components.WebAssembly.DevServer.Server.Program;
+using DevServerProgram = Microsoft.AspNetCore.Blazor.DevServer.Server.Program;
 
 namespace TestServer
 {
     public class Program
     {
-        public static async Task Main(string[] args)
+        public static void Main(string[] args)
         {
             var createIndividualHosts = new Dictionary<string, (IHost host, string basePath)>
             {
@@ -23,19 +26,16 @@ namespace TestServer
                 ["Server authentication"] = (BuildWebHost<ServerAuthenticationStartup>(CreateAdditionalArgs(args)), "/subdir"),
                 ["CORS (WASM)"] = (BuildWebHost<CorsStartup>(CreateAdditionalArgs(args)), "/subdir"),
                 ["Prerendering (Server-side)"] = (BuildWebHost<PrerenderedStartup>(CreateAdditionalArgs(args)), "/prerendered"),
-                ["Client-side with fallback"] = (BuildWebHost<StartupWithMapFallbackToClientSideBlazor>(CreateAdditionalArgs(args)), "/fallback"),
                 ["Multiple components (Server-side)"] = (BuildWebHost<MultipleComponents>(CreateAdditionalArgs(args)), "/multiple-components"),
-                ["Save state"] = (BuildWebHost<SaveState>(CreateAdditionalArgs(args)), "/save-state"),
                 ["Globalization + Localization (Server-side)"] = (BuildWebHost<InternationalizationStartup>(CreateAdditionalArgs(args)), "/subdir"),
                 ["Server-side blazor"] = (BuildWebHost<ServerStartup>(CreateAdditionalArgs(args)), "/subdir"),
                 ["Hosted client-side blazor"] = (BuildWebHost<ClientStartup>(CreateAdditionalArgs(args)), "/subdir"),
-                ["Hot Reload"] = (BuildWebHost<HotReloadStartup>(CreateAdditionalArgs(args)), "/subdir"),
                 ["Dev server client-side blazor"] = CreateDevServerHost(CreateAdditionalArgs(args))
             };
 
             var mainHost = BuildWebHost(args);
 
-            await Task.WhenAll(createIndividualHosts.Select(s => s.Value.host.StartAsync()));
+            Task.WhenAll(createIndividualHosts.Select(s => s.Value.host.StartAsync())).GetAwaiter().GetResult();
 
             var testAppInfo = mainHost.Services.GetRequiredService<TestAppInfo>();
             testAppInfo.Scenarios = createIndividualHosts
@@ -43,7 +43,7 @@ namespace TestServer
                 kvp => kvp.Value.host.Services.GetRequiredService<IServer>().Features.Get<IServerAddressesFeature>().Addresses.FirstOrDefault()
                     .Replace("127.0.0.1", "localhost") + kvp.Value.basePath);
 
-            await mainHost.RunAsync();
+            mainHost.Run();
         }
 
         private static (IHost host, string basePath) CreateDevServerHost(string[] args)

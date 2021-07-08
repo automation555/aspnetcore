@@ -1,5 +1,5 @@
-// Licensed to the .NET Foundation under one or more agreements.
-// The .NET Foundation licenses this file to you under the MIT license.
+// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Buffers;
 using System.Buffers.Binary;
@@ -31,11 +31,10 @@ namespace System.Net.Http
         private const uint FourByteLengthMask = 0x80000000;
         private const ulong EightByteLengthMask = 0xC000000000000000;
 
-        // public for internal use in aspnetcore
         public const uint OneByteLimit = (1U << 6) - 1;
-        public const uint TwoByteLimit = (1U << 14) - 1;
-        public const uint FourByteLimit = (1U << 30) - 1;
-        public const long EightByteLimit = (1L << 62) - 1;
+        private const uint TwoByteLimit = (1U << 16) - 1;
+        private const uint FourByteLimit = (1U << 30) - 1;
+        private const long EightByteLimit = (1L << 62) - 1;
 
         public static bool TryRead(ReadOnlySpan<byte> buffer, out long value, out int bytesRead)
         {

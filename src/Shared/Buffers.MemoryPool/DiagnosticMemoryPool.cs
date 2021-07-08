@@ -1,5 +1,5 @@
-// Copyright (c) Microsoft. All rights reserved.
-// Licensed under the MIT license. See LICENSE file in the project root for full license information.
+// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Collections.Generic;
 using System.Linq;
@@ -24,7 +24,7 @@ namespace System.Buffers
 
         private readonly List<Exception> _blockAccessExceptions;
 
-        private readonly TaskCompletionSource _allBlocksReturned;
+        private readonly TaskCompletionSource<object> _allBlocksReturned;
 
         private int _totalBlocks;
 
@@ -40,7 +40,7 @@ namespace System.Buffers
             _rentTracking = rentTracking;
             _blocks = new HashSet<DiagnosticPoolBlock>();
             _syncObj = new object();
-            _allBlocksReturned = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+            _allBlocksReturned = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
             _blockAccessExceptions = new List<Exception>();
         }
 
@@ -131,8 +131,6 @@ namespace System.Buffers
                 {
                     SetAllBlocksReturned();
                 }
-
-                _pool.Dispose();
             }
         }
 
@@ -144,7 +142,7 @@ namespace System.Buffers
             }
             else
             {
-                _allBlocksReturned.SetResult();
+                _allBlocksReturned.SetResult(null);
             }
         }
 

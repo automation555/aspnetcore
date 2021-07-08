@@ -1,10 +1,11 @@
+// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
 using System;
 using System.IO;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 
 namespace StaticFilesSample
@@ -27,25 +28,22 @@ namespace StaticFilesSample
             });
         }
 
-        public static Task Main(string[] args)
+        public static void Main(string[] args)
         {
-            var host = new HostBuilder()
-                .ConfigureWebHost(webHostBuilder =>
+            var host = new WebHostBuilder()
+                .ConfigureLogging(factory =>
                 {
-                    webHostBuilder
-                    .ConfigureLogging(factory =>
-                    {
-                        factory.AddFilter("Console", level => level >= LogLevel.Debug);
-                        factory.AddConsole();
-                    })
-                    .UseContentRoot(Directory.GetCurrentDirectory())
-                    .UseKestrel()
-                    // .UseHttpSys()
-                    .UseIISIntegration()
-                    .UseStartup<Startup>();
-                }).Build();
+                    factory.AddFilter("Console", level => level >= LogLevel.Debug);
+                    factory.AddConsole();
+                })
+                .UseContentRoot(Directory.GetCurrentDirectory())
+                .UseKestrel()
+                // .UseHttpSys()
+                .UseIISIntegration()
+                .UseStartup<Startup>()
+                .Build();
 
-            return host.RunAsync();
+            host.Run();
         }
     }
 }

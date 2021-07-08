@@ -1,4 +1,7 @@
-﻿using System;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+using System;
 using Microsoft.AspNetCore.Mvc;
 
 [assembly: ApiConventionType(typeof(DefaultApiConventions))]
@@ -12,7 +15,7 @@ namespace Microsoft.AspNetCore.Mvc.Api.Analyzers
         {
             if (id == null)
             {
-                return /*MM*/NotFound();
+                /*MM*/return NotFound();
             }
 
             return "Hello world";

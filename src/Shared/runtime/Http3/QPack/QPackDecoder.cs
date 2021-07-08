@@ -1,7 +1,6 @@
-// Licensed to the .NET Foundation under one or more agreements.
-// The .NET Foundation licenses this file to you under the MIT license.
+// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-#nullable enable
 using System.Buffers;
 using System.Diagnostics;
 using System.Net.Http.HPack;
@@ -13,7 +12,7 @@ using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http;
 
 namespace System.Net.Http.QPack
 {
-    internal sealed class QPackDecoder : IDisposable
+    internal class QPackDecoder : IDisposable
     {
         private enum State
         {
@@ -118,19 +117,19 @@ namespace System.Net.Http.QPack
         private bool _huffman;
         private int? _index;
 
-        private byte[]? _headerName;
+        private byte[] _headerName;
         private int _headerNameLength;
         private int _headerValueLength;
         private int _stringLength;
         private int _stringIndex;
-        private IntegerDecoder _integerDecoder;
+        private readonly IntegerDecoder _integerDecoder = new IntegerDecoder();
 
         private static ArrayPool<byte> Pool => ArrayPool<byte>.Shared;
 
         private static void ReturnAndGetNewPooledArray(ref byte[] buffer, int newSize)
         {
             byte[] old = buffer;
-            buffer = null!;
+            buffer = null;
 
             Pool.Return(old, clearArray: true);
             buffer = Pool.Rent(newSize);
@@ -151,29 +150,20 @@ namespace System.Net.Http.QPack
             if (_stringOctets != null)
             {
                 Pool.Return(_stringOctets, true);
-                _stringOctets = null!;
+                _stringOctets = null;
             }
 
             if (_headerNameOctets != null)
             {
                 Pool.Return(_headerNameOctets, true);
-                _headerNameOctets = null!;
+                _headerNameOctets = null;
             }
 
             if (_headerValueOctets != null)
             {
                 Pool.Return(_headerValueOctets, true);
-                _headerValueOctets = null!;
+                _headerValueOctets = null;
             }
-        }
-
-        /// <summary>
-        /// Reset the decoder state back to its initial value. Resetting state is required when reusing a decoder with multiple
-        /// header frames. For example, decoding a response's headers and trailers.
-        /// </summary>
-        public void Reset()
-        {
-            _state = State.RequiredInsertCount;
         }
 
         public void Decode(in ReadOnlySequence<byte> headerBlock, IHttpHeadersHandler handler)
@@ -421,7 +411,7 @@ namespace System.Net.Http.QPack
 
             if (_index is int index)
             {
-                Debug.Assert(index >= 0 && index <= H3StaticTable.Count, $"The index should be a valid static index here. {nameof(QPackDecoder)} should have previously thrown if it read a dynamic index.");
+                Debug.Assert(index >= 0 && index <= H3StaticTable.Instance.Count, $"The index should be a valid static index here. {nameof(QPackDecoder)} should have previously thrown if it read a dynamic index.");
                 handler.OnStaticIndexedHeader(index, headerValueSpan);
                 _index = null;
 

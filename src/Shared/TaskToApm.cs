@@ -1,6 +1,5 @@
-// Licensed to the .NET Foundation under one or more agreements.
-// The .NET Foundation licenses this file to you under the MIT license.
-// See the LICENSE file in the project root for more information.
+// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 // Helper methods for using Tasks to implement the APM pattern.
 //
@@ -43,7 +42,7 @@ namespace System.Threading.Tasks
                 return;
             }
 
-            throw new ArgumentNullException(nameof(asyncResult));
+            throw new ArgumentNullException();
         }
 
         /// <summary>Processes an IAsyncResult returned by Begin.</summary>
@@ -55,7 +54,7 @@ namespace System.Threading.Tasks
                 return task.GetAwaiter().GetResult();
             }
 
-            throw new ArgumentNullException(nameof(asyncResult));
+            throw new ArgumentNullException();
         }
 
         /// <summary>Provides a simple IAsyncResult that wraps a Task.</summary>

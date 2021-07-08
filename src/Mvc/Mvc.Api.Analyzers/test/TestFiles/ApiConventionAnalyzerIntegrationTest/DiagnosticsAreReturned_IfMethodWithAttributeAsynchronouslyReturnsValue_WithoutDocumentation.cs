@@ -1,4 +1,7 @@
-﻿using System.Threading.Tasks;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+using System.Threading.Tasks;
 
 namespace Microsoft.AspNetCore.Mvc.Api.Analyzers
 {
@@ -15,7 +18,7 @@ namespace Microsoft.AspNetCore.Mvc.Api.Analyzers
                 return NotFound();
             }
 
-            return /*MM*/new DiagnosticsAreReturned_IfMethodWithAttributeAsynchronouslyReturnsValue_WithoutDocumentationModel();
+            /*MM*/return new DiagnosticsAreReturned_IfMethodWithAttributeAsynchronouslyReturnsValue_WithoutDocumentationModel();
         }
     }
 

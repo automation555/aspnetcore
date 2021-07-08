@@ -1,23 +1,16 @@
-using System.Collections.Generic;
+// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 namespace Wasm.Performance.Driver
 {
     class BenchmarkResult
     {
-        /// <summary>The result of executing scenario benchmarks</summary>
-        public List<BenchmarkScenarioResult> ScenarioResults { get; set; }
+        public string Name { get; set; }
 
-        /// <summary>Downloaded application size in bytes</summary>
-        public long? DownloadSize { get; set; }
+        public bool Success { get; set; }
 
-        /// <summary>WASM memory usage</summary>
-        public long? WasmMemory { get; set; }
+        public int NumExecutions { get; set; }
 
-        // See https://developer.mozilla.org/en-US/docs/Web/API/Performance/memory
-        /// <summary>JS memory usage</summary>
-        public long? UsedJSHeapSize { get; set; }
-
-        /// <summary>JS memory usage</summary>
-        public long? TotalJSHeapSize { get; set; }
+        public double Duration { get; set; }
     }
 }

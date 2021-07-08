@@ -1,11 +1,12 @@
+// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
 using System;
 using System.Linq;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 
 namespace IISSample
@@ -37,7 +38,7 @@ namespace IISSample
 
                 await context.Response.WriteAsync("Address:" + Environment.NewLine);
                 await context.Response.WriteAsync("Scheme: " + context.Request.Scheme + Environment.NewLine);
-                await context.Response.WriteAsync("Host: " + context.Request.Headers.Host + Environment.NewLine);
+                await context.Response.WriteAsync("Host: " + context.Request.Headers["Host"] + Environment.NewLine);
                 await context.Response.WriteAsync("PathBase: " + context.Request.PathBase.Value + Environment.NewLine);
                 await context.Response.WriteAsync("Path: " + context.Request.Path.Value + Environment.NewLine);
                 await context.Response.WriteAsync("Query: " + context.Request.QueryString.Value + Environment.NewLine);
@@ -72,23 +73,20 @@ namespace IISSample
             });
         }
 
-        public static Task Main(string[] args)
+        public static void Main(string[] args)
         {
-            var host = new HostBuilder()
-                .ConfigureWebHost(webHostBuilder =>
-                {
-                    webHostBuilder
-                        .UseKestrel()
-                        .UseAzureAppServices()
-                        .UseStartup<Startup>();
-                })
+            var host = new WebHostBuilder()
                 .ConfigureLogging(factory =>
                 {
                     factory.AddConsole();
                 })
+                .UseKestrel()
+                .UseAzureAppServices()
+                .UseStartup<Startup>()
                 .Build();
 
-            return host.RunAsync();
+            host.Run();
         }
     }
 }
+

@@ -1,3 +1,6 @@
+// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -168,7 +171,14 @@ namespace ClientSample
 
                 _application.Output.Advance(bytesReceived);
 
-                var result = await _application.Output.FlushAsync();
+                var flushTask = _application.Output.FlushAsync();
+
+                if (!flushTask.IsCompleted)
+                {
+                    await flushTask;
+                }
+
+                var result = flushTask.GetAwaiter().GetResult();
                 if (result.IsCompleted)
                 {
                     // Pipe consumer is shut down, do we stop writing
