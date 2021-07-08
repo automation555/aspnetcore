@@ -7,7 +7,6 @@
     <Description>Authenticate your Blazor webassembly applications with Azure Active Directory and Azure Active Directory B2C</Description>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <Trimmable>true</Trimmable>
-    <Nullable>disable</Nullable>
   </PropertyGroup>
 
   <ItemGroup>
@@ -33,7 +32,6 @@
   <ItemGroup>
     <YarnInputs Include="$(YarnWorkingDir)**" Exclude="$(YarnWorkingDir)node_modules\**;$(YarnWorkingDir)*.d.ts;$(YarnWorkingDir)dist\**" />
     <YarnOutputs Include="$(YarnWorkingDir)dist\$(Configuration)\AuthenticationService.js" />
-    <YarnOutputs Include="$(YarnWorkingDir)dist\$(Configuration)\AuthenticationService.js.map" Condition="'$(Configuration)' == 'Debug'" />
 
     <Content Remove="$(YarnWorkingDir)**" />
     <None Include="$(YarnWorkingDir)*" Exclude="$(YarnWorkingDir)node_modules\**" />
